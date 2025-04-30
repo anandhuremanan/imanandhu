@@ -118,6 +118,13 @@
 					<div class="-mt-4">Aid Aice</div>
 				</div>
 			</a>
+
+			<a href="https://sysinfopro.netlify.app" target="_blank">
+				<div class="h-40 border rounded-2xl p-4 flex justify-center items-center flex-col">
+					<div class="text-6xl">SP</div>
+					<div class="-mt-4">SysInfo Pro</div>
+				</div>
+			</a>
 		</div>
 	</section>
 </main>
