@@ -60,13 +60,23 @@
 		/>
 		<h1 class="text-4xl lg:text-6xl">Hi I'm Anandhu Remanan</h1>
 		<span class="lg:text-2xl">Full Stack Developer Loves To Build Cross Platform Apps</span>
-		<a href="/hybrid"
-			><button
-				class="pixel2 p-2 m-4"
-				aria-label="Click to know more about Anandhu"
-				on:click={playSound}>Know More</button
-			></a
-		>
+		<div class="flex">
+			<a href="/hybrid"
+				><button
+					class="pixel2 p-2 m-4"
+					aria-label="Click to know more about Anandhu"
+					on:click={playSound}>Know More</button
+				></a
+			>
+
+			<a href="https://music.imanandhu.in"
+				><button
+					class="pixel2 p-2 m-4"
+					aria-label="Click to know more about Anandhu"
+					on:click={playSound}>Listen To My Music</button
+				></a
+			>
+		</div>
 	</section>
 
 	<section
