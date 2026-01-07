@@ -5,7 +5,30 @@
 	let { children } = $props();
 </script>
 
-<svelte:head><link rel="icon" href={favicon} /></svelte:head>
+<svelte:head>
+	<title>Anandhu O R | Software Engineer</title>
+	<meta
+		name="description"
+		content="Software Engineer focused on clean UI, scalable systems, and thoughtful digital experiences."
+	/>
+
+	<!-- Open Graph -->
+	<meta property="og:type" content="website" />
+	<meta property="og:title" content="Anandhu O R | Software Engineer" />
+	<meta
+		property="og:description"
+		content="Software Engineer focused on clean UI, scalable systems, and thoughtful digital experiences."
+	/>
+	<meta property="og:url" content="https://imanandhu.in" />
+
+	<!-- Twitter -->
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:title" content="Anandhu O R | Software Engineer" />
+	<meta
+		name="twitter:description"
+		content="Software Engineer focused on clean UI, scalable systems, and thoughtful digital experiences."
+	/>
+</svelte:head>
 
 <nav class="outfit-font mt-4 flex w-full items-center justify-center text-xs md:text-base">
 	<ul
