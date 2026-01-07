@@ -31,12 +31,12 @@
 				<div class="card-content px-14">
 					<div class="description mt-6 flex items-center justify-between">
 						<div class="text-center">
-							<p class="text-4xl dark:text-white text-black">4+</p>
+							<p class="text-4xl text-black dark:text-white">4+</p>
 							<p class="caveat-font">Years Experience</p>
 						</div>
 
 						<div class="text-center">
-							<p class="text-4xl dark:text-white text-black">30+</p>
+							<p class="text-4xl text-black dark:text-white">30+</p>
 							<p class="caveat-font">Projects Completed</p>
 						</div>
 					</div>
@@ -74,7 +74,9 @@
 						<a href="https://music.imanandhu.in" rel="noopener noreferrer">
 							<img src="/music.png" alt="music" class={`${iconStyle} h-30 w-30 rotate-20 `} />
 						</a>
-						<img src="/note.png" alt="music" class={`${iconStyle} h-20 w-20 -rotate-20 `} />
+						<a href="https://stories.imanandhu.in" rel="noopener noreferrer">
+							<img src="/note.png" alt="music" class={`${iconStyle} h-20 w-20 -rotate-20 `} />
+						</a>
 						<img src="/paint.png" alt="music" class={`${iconStyle} h-30 w-30 -rotate-30 `} />
 					</div>
 				</div>
