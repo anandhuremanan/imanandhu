@@ -1,38 +1,16 @@
-# sv
+# Portfolio Site Built With create-svelte
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/main/packages/create-svelte).
 
-## Creating a project
+# Running the Project
 
-If you're seeing this, you've probably already done this step. Congrats!
+To run the project, execute the following command in the root of the project
 
-```sh
-# create a new project in the current directory
-npx sv create
+`npm install && npm run dev -- --open`
 
-# create a new project in my-app
-npx sv create my-app
-```
+# Live Site
 
-## Developing
+Visit the live site @ [imanandhu](https://imanandhu.pages.dev)
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
 
-```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-## Building
-
-To create a production version of your app:
-
-```sh
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+![sveltekit](https://img.shields.io/badge/svelte-orange?style=flat&logo=https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Svelte_Logo.svg/747px-Svelte_Logo.svg.png)
