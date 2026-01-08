@@ -1,6 +1,5 @@
 <script lang="ts">
 	import './layout.css';
-	import favicon from '$lib/assets/favicon.svg';
 
 	let { children } = $props();
 </script>
@@ -11,6 +10,7 @@
 		name="description"
 		content="Software Engineer focused on clean UI, scalable systems, and thoughtful digital experiences."
 	/>
+	<link rel="icon" href="/favicon.ico" />
 
 	<!-- Open Graph -->
 	<meta property="og:type" content="website" />
