@@ -72,13 +72,15 @@
 					<h2 class="title caveat-font dark:text-white">Things I Love Beside Engineering</h2>
 					<div class="mt-6 flex items-center justify-center -space-x-2">
 						<a href="https://music.imanandhu.in" rel="noopener noreferrer">
-							<img src="/music.png" alt="music" class={`${iconStyle} h-30 w-30 rotate-20 `} />
+							<img src="/music.png" alt="music" class={`${iconStyle} h-30 w-30 rotate-20`} />
 						</a>
 						<a href="https://stories.imanandhu.in" rel="noopener noreferrer">
-							<img src="/note.png" alt="music" class={`${iconStyle} h-20 w-20 -rotate-20 `} />
+							<img src="/note.png" alt="music" class={`${iconStyle} h-20 w-20 -rotate-20`} />
 						</a>
-						<img src="/paint.png" alt="music" class={`${iconStyle} h-30 w-30 -rotate-30 `} />
+						<img src="/paint.png" alt="music" class={`${iconStyle} h-30 w-30 -rotate-30`} />
 					</div>
+
+					<div class="mt-2 text-center text-xs text-zinc-600">Click to explore</div>
 				</div>
 			</div>
 		</div>
