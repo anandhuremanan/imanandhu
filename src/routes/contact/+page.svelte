@@ -19,7 +19,7 @@
 </svelte:head>
 
 <section
-	in:fly={{ y: 20, duration: 600, delay: 200 }}
+	in:fly={{ y: 20, duration: 600 }}
 	class="flex w-full flex-col gap-4 p-4 md:p-8 lg:px-12 xl:px-32"
 >
 	<div class="flex flex-col gap-4">
