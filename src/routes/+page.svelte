@@ -3,11 +3,11 @@
 		'p-1 delay-150 duration-300 ease-in-out hover:-translate-y-1 hover:scale-110 hover:cursor-pointer hover:transition';
 </script>
 
-<section class="flex w-full flex-col gap-4 p-4 md:flex-row md:p-8 lg:px-46">
+<section class="flex w-full flex-col gap-4 p-4 md:flex-row md:p-8 lg:px-12 xl:px-32">
 	<div class="flex flex-1 flex-col gap-4">
 		<!-- Hero Card -->
 		<div
-			class="relative flex flex-col items-center gap-4 rounded-2xl bg-white p-6 shadow-2xl md:flex-row dark:border dark:border-zinc-800 dark:bg-black"
+			class="relative flex flex-col items-center gap-4 rounded-2xl bg-white p-6 shadow-2xl xl:flex-row dark:border dark:border-zinc-800 dark:bg-black"
 		>
 			<div class="card-content">
 				<img src="/hero.png" alt="hero of the story" class="h-60 w-60 rounded-4xl" />
@@ -24,7 +24,7 @@
 		</div>
 
 		<!-- Bottom Row Cards -->
-		<div class="flex flex-col gap-4 md:flex-row">
+		<div class="flex flex-col gap-4 xl:flex-row">
 			<div
 				class="relative flex-1 rounded-2xl bg-white p-6 shadow-xl dark:border dark:border-zinc-800 dark:bg-black"
 			>
@@ -66,18 +66,30 @@
 				</div>
 			</div>
 			<div
-				class="relative h-60 flex-1 rounded-2xl bg-white p-6 shadow-xl dark:border dark:border-zinc-800 dark:bg-black"
+				class="relative flex-1 rounded-2xl bg-white p-6 shadow-xl dark:border dark:border-zinc-800 dark:bg-black"
 			>
 				<div class="card-content">
 					<h2 class="title caveat-font dark:text-white">Things I Love Beside Engineering</h2>
 					<div class="mt-6 flex items-center justify-center -space-x-2">
 						<a href="https://music.imanandhu.in" rel="noopener noreferrer">
-							<img src="/music.png" alt="music" class={`${iconStyle} h-30 w-30 rotate-20`} />
+							<img
+								src="/music.png"
+								alt="music"
+								class={`${iconStyle} h-20 w-20 rotate-20 sm:h-30 sm:w-30`}
+							/>
 						</a>
 						<a href="https://stories.imanandhu.in" rel="noopener noreferrer">
-							<img src="/note.png" alt="music" class={`${iconStyle} h-20 w-20 -rotate-20`} />
+							<img
+								src="/note.png"
+								alt="music"
+								class={`${iconStyle} h-14 w-14 -rotate-20 sm:h-20 sm:w-20`}
+							/>
 						</a>
-						<img src="/paint.png" alt="music" class={`${iconStyle} h-30 w-30 -rotate-30`} />
+						<img
+							src="/paint.png"
+							alt="music"
+							class={`${iconStyle} h-20 w-20 -rotate-30 sm:h-30 sm:w-30`}
+						/>
 					</div>
 
 					<div class="mt-2 text-center text-xs text-zinc-600">Click to explore</div>
@@ -121,7 +133,7 @@
 					<img src="/icons/aws.png" alt="figma" class="h-16 w-16" />
 				</div>
 				<div class="flex items-center justify-center">
-					<img src="/icons/next.png" alt="figma" class="h-16 w-16" />
+					<img src="/icons/next.png" alt="figma" class="h-16 w-16 dark:invert" />
 				</div>
 			</div>
 		</div>
