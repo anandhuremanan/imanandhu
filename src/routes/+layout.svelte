@@ -1,5 +1,7 @@
 <script lang="ts">
 	import './layout.css';
+	import '@fontsource-variable/caveat';
+	import '@fontsource-variable/outfit';
 
 	let { children } = $props();
 </script>
