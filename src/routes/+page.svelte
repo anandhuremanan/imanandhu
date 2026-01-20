@@ -1,6 +1,23 @@
 <script lang="ts">
 	const iconStyle =
 		'p-1 delay-150 duration-300 ease-in-out hover:-translate-y-1 hover:scale-110 hover:cursor-pointer hover:transition';
+	import { fly } from 'svelte/transition';
+
+	const schema = {
+		'@context': 'https://schema.org',
+		'@type': 'Person',
+		name: 'Anandhu Remanan',
+		url: 'https://imanandhu.in',
+		image: 'https://imanandhu.in/hero.webp',
+		jobTitle: 'Software Engineer',
+		sameAs: [
+			'https://github.com/anandhuremanan',
+			'https://twitter.com/anandhu_or',
+			'https://www.linkedin.com/in/anandhu-remanan/'
+		],
+		description:
+			'Software Engineer focused on clean UI, scalable systems, and thoughtful digital experiences.'
+	};
 </script>
 
 <svelte:head>
@@ -16,9 +33,13 @@
 	/>
 	<meta property="og:image" content="/hero.webp" />
 	<meta property="og:type" content="website" />
+	{@html `<script type="application/ld+json">${JSON.stringify(schema)}</script>`}
 </svelte:head>
 
-<section class="flex w-full flex-col gap-4 p-4 md:flex-row md:p-8 lg:px-12 xl:px-32">
+<section
+	in:fly={{ y: 20, duration: 600, delay: 200 }}
+	class="flex w-full flex-col gap-4 p-4 md:flex-row md:p-8 lg:px-12 xl:px-32"
+>
 	<div class="flex flex-1 flex-col gap-4">
 		<!-- Hero Card -->
 		<div

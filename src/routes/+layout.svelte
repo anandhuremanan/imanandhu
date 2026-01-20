@@ -36,7 +36,7 @@
 	>
 		<li><a href="/" class="hover:text-blue-700">Home</a></li>
 		<li><a href="/" class="hover:text-blue-700">Case Studies</a></li>
-		<li><a href="/" class="hover:text-blue-700">Contact</a></li>
+		<li><a href="/contact" class="hover:text-blue-700">Contact</a></li>
 		<li>
 			<a href="/" class="rounded-2xl border border-blue-700 px-2 py-1 text-blue-700">Resume</a>
 		</li>
