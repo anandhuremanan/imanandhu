@@ -37,7 +37,7 @@
 		class="flex space-x-8 rounded-full bg-white px-6 py-3 shadow-2xl dark:border dark:border-zinc-800 dark:bg-black dark:text-white"
 	>
 		<li><a href="/" class="hover:text-blue-700">Home</a></li>
-		<li><a href="/" class="hover:text-blue-700">Case Studies</a></li>
+		<li><a href="/case-studies" class="hover:text-blue-700">Case Studies</a></li>
 		<li><a href="/contact" class="hover:text-blue-700">Contact</a></li>
 		<li>
 			<a href="/" class="rounded-2xl border border-blue-700 px-2 py-1 text-blue-700">Resume</a>
