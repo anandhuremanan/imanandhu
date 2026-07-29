@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { fly } from 'svelte/transition';
 
-	const tags = ['Next.js', 'React Native', 'Supabase', 'Tailwind CSS', 'TypeScript'];
+	// Case Study 01: BusTrack data
+	const bustrackTags = ['Next.js', 'React Native', 'Supabase', 'Tailwind CSS', 'TypeScript'];
 
-	const features = [
+	const bustrackFeatures = [
 		{
 			icon: '🗺️',
 			title: 'Route Timeline Prediction',
@@ -30,11 +31,48 @@
 		}
 	];
 
-	const stack = [
+	const bustrackStack = [
 		{ label: 'Next.js', icon: '/icons/next.webp', invert: true },
 		{ label: 'React Native', icon: '/icons/react.webp', invert: false },
 		{ label: 'Supabase', icon: null, emoji: '⚡' },
 		{ label: 'TypeScript', icon: '/icons/ts.webp', invert: false }
+	];
+
+	// Case Study 02: FileDrop data
+	const filedropTags = ['Go', 'Next.js', 'Wails', 'Cloudflare R2', 'TypeScript', 'Tailwind CSS'];
+
+	const filedropFeatures = [
+		{
+			icon: '🔑',
+			title: 'No Account Required',
+			description:
+				'Instant transfers without registration. Simply pair and share using temporary, secure codes.'
+		},
+		{
+			icon: '⚡',
+			title: 'Fast Device Pairing',
+			description:
+				'Connect devices in seconds via short transfer codes, bridging desktop, mobile, and web.'
+		},
+		{
+			icon: '🛡️',
+			title: 'Secure File Transfers',
+			description:
+				'Uses signed Cloudflare R2 URLs for secure, direct upload and download sessions.'
+		},
+		{
+			icon: '🧹',
+			title: 'Automatic Cleanup',
+			description:
+				'Files are stored temporarily and automatically cleaned up from Cloudflare R2 storage post-transfer.'
+		}
+	];
+
+	const filedropStack = [
+		{ label: 'Go', icon: '/icons/go.webp', invert: false },
+		{ label: 'Next.js', icon: '/icons/next.webp', invert: true },
+		{ label: 'Wails', icon: null, emoji: '🦅' },
+		{ label: 'Cloudflare R2', icon: null, emoji: '☁️' }
 	];
 </script>
 
@@ -53,7 +91,7 @@
 
 <section
 	in:fly={{ y: 20, duration: 600 }}
-	class="flex w-full flex-col gap-4 p-4 md:p-8 lg:px-12 xl:px-32"
+	class="flex w-full flex-col gap-12 p-4 md:p-8 lg:px-12 xl:px-32"
 >
 	<!-- Page Header -->
 	<div
@@ -97,7 +135,7 @@
 
 					<!-- Tech Tags -->
 					<div class="flex flex-wrap gap-2">
-						{#each tags as tag}
+						{#each bustrackTags as tag}
 							<span
 								class="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs font-medium text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
 							>
@@ -179,7 +217,7 @@
 
 		<!-- Features Grid -->
 		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-			{#each features as feature}
+			{#each bustrackFeatures as feature}
 				<div
 					class="feature-card relative flex flex-col gap-3 rounded-2xl bg-white p-6 shadow-xl transition-transform duration-200 hover:-translate-y-1 dark:border dark:border-zinc-800 dark:bg-black"
 				>
@@ -205,7 +243,7 @@
 				<div class="card-content">
 					<h3 class="caveat-font mb-5 text-xl font-bold text-black dark:text-white">Tech Stack</h3>
 					<div class="grid grid-cols-2 gap-4">
-						{#each stack as tech}
+						{#each bustrackStack as tech}
 							<div class="flex items-center gap-3 rounded-xl bg-zinc-50 p-3 dark:bg-zinc-900">
 								{#if tech.icon}
 									<img
@@ -300,6 +338,241 @@
 		</div>
 	</div>
 
+	<!-- FileDrop Case Study -->
+	<div class="flex flex-col gap-4">
+		<!-- Project Hero Card -->
+		<div
+			class="filedrop-hero relative overflow-hidden rounded-2xl bg-white p-8 shadow-2xl dark:border dark:border-zinc-800 dark:bg-black"
+		>
+			<div class="card-content flex flex-col gap-6 md:flex-row md:items-start md:gap-10">
+				<!-- Left: Info -->
+				<div class="flex flex-1 flex-col gap-4">
+					<div class="flex items-center gap-3">
+						<div class="filedrop-icon-wrapper flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-600 text-2xl shadow-lg">
+							💧
+						</div>
+						<div>
+							<p class="text-xs font-medium tracking-wider text-indigo-600 uppercase">Case Study 02</p>
+							<h2 class="text-2xl font-bold text-black dark:text-white">FileDrop</h2>
+						</div>
+					</div>
+
+					<p class="text-base leading-relaxed text-zinc-500 dark:text-zinc-400">
+						A secure, cross-platform file transfer application designed to make sharing files between devices simple, fast, and privacy-focused using temporary transfer sessions.
+					</p>
+
+					<!-- Tech Tags -->
+					<div class="flex flex-wrap gap-2">
+						{#each filedropTags as tag}
+							<span
+								class="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs font-medium text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+							>
+								{tag}
+							</span>
+						{/each}
+					</div>
+
+					<!-- CTA -->
+					<div class="mt-2 flex flex-wrap gap-3">
+						<a
+							href="https://filedrop.imanandhu.in"
+							target="_blank"
+							rel="noopener noreferrer"
+							class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:bg-indigo-700 hover:shadow-lg"
+						>
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+								<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+								<polyline points="15 3 21 3 21 9"/>
+								<line x1="10" y1="14" x2="21" y2="3"/>
+							</svg>
+							Live Project
+						</a>
+						<span
+							class="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-5 py-2.5 text-sm font-semibold text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+						>
+							<span class="h-2 w-2 rounded-full bg-indigo-500 animate-pulse"></span>
+							Web + Desktop
+						</span>
+					</div>
+				</div>
+
+				<!-- Right: Minimal visual for FileDrop -->
+				<div class="flex shrink-0 flex-col items-center justify-center gap-4 md:w-64">
+					<div class="filedrop-visual w-full rounded-xl bg-zinc-50 p-5 dark:bg-zinc-900">
+						<p class="mb-3 text-xs font-semibold tracking-widest text-zinc-400 uppercase">Transfer Session</p>
+						<div class="flex flex-col gap-4">
+							<!-- Pair Code Display -->
+							<div class="flex items-center justify-center gap-2 rounded-lg bg-white p-2 text-center font-mono text-sm font-bold tracking-wider text-indigo-600 shadow-sm dark:bg-zinc-800 dark:text-indigo-400">
+								<span>742</span>
+								<span class="text-zinc-300 dark:text-zinc-600">•</span>
+								<span>981</span>
+							</div>
+
+							<!-- Device-to-Device transfer connection animation -->
+							<div class="flex items-center justify-between gap-2 px-1 py-1">
+								<div class="flex flex-col items-center gap-1">
+									<span class="text-xl">💻</span>
+									<span class="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400">Desktop</span>
+								</div>
+
+								<div class="relative flex flex-1 items-center justify-center">
+									<!-- Connecting line with moving dots -->
+									<div class="h-1 w-full rounded-full bg-zinc-200 dark:bg-zinc-800 overflow-hidden relative">
+										<div class="transfer-pulse absolute top-0 h-full w-12 bg-gradient-to-r from-transparent via-indigo-500 to-transparent"></div>
+									</div>
+								</div>
+
+								<div class="flex flex-col items-center gap-1">
+									<span class="text-xl">📱</span>
+									<span class="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400">Mobile</span>
+								</div>
+							</div>
+
+							<!-- File Transfer Status -->
+							<div class="rounded-lg border border-zinc-100 bg-white p-2.5 shadow-sm dark:border-zinc-800 dark:bg-zinc-800">
+								<div class="flex items-center gap-2">
+									<span class="text-lg">📄</span>
+									<div class="min-w-0 flex-1">
+										<p class="truncate text-xs font-semibold text-zinc-700 dark:text-zinc-300">presentation.pdf</p>
+										<p class="text-[10px] text-zinc-400">4.2 MB / 6.5 MB (65%)</p>
+									</div>
+								</div>
+								<!-- Progress Bar -->
+								<div class="mt-2 h-1.5 w-full rounded-full bg-zinc-100 dark:bg-zinc-700 overflow-hidden">
+									<div class="progress-bar-fill h-full rounded-full bg-indigo-600"></div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<p class="text-center text-xs text-zinc-400">Temporary peer transfer mockup</p>
+				</div>
+			</div>
+
+			<!-- Decorative blur blobs -->
+			<div class="pointer-events-none absolute -top-16 -right-16 h-48 w-48 rounded-full bg-indigo-100 opacity-30 blur-3xl dark:bg-indigo-900"></div>
+			<div class="pointer-events-none absolute -bottom-12 -left-12 h-40 w-40 rounded-full bg-indigo-50 opacity-40 blur-2xl dark:bg-indigo-950"></div>
+		</div>
+
+		<!-- Features Grid -->
+		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+			{#each filedropFeatures as feature}
+				<div
+					class="feature-card relative flex flex-col gap-3 rounded-2xl bg-white p-6 shadow-xl transition-transform duration-200 hover:-translate-y-1 dark:border dark:border-zinc-800 dark:bg-black"
+				>
+					<div class="card-content">
+						<div class="mb-3 text-3xl">{feature.icon}</div>
+						<h3 class="caveat-font text-lg font-semibold text-black dark:text-white">
+							{feature.title}
+						</h3>
+						<p class="mt-1 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+							{feature.description}
+						</p>
+					</div>
+				</div>
+			{/each}
+		</div>
+
+		<!-- Tech Stack + Platforms Row -->
+		<div class="flex flex-col gap-4 md:flex-row">
+			<!-- Tech Stack Card -->
+			<div
+				class="relative flex-1 rounded-2xl bg-white p-6 shadow-xl dark:border dark:border-zinc-800 dark:bg-black"
+			>
+				<div class="card-content">
+					<h3 class="caveat-font mb-5 text-xl font-bold text-black dark:text-white">Tech Stack</h3>
+					<div class="grid grid-cols-2 gap-4">
+						{#each filedropStack as tech}
+							<div class="flex items-center gap-3 rounded-xl bg-zinc-50 p-3 dark:bg-zinc-900">
+								{#if tech.icon}
+									<img
+										src={tech.icon}
+										alt={tech.label}
+										class="h-8 w-8 {tech.invert ? 'dark:invert' : ''}"
+										width="32"
+										height="32"
+										loading="lazy"
+									/>
+								{:else}
+									<span class="text-2xl">{tech.emoji}</span>
+								{/if}
+								<span class="text-sm font-medium text-zinc-700 dark:text-zinc-300">{tech.label}</span>
+							</div>
+						{/each}
+					</div>
+				</div>
+			</div>
+
+			<!-- Platforms Card -->
+			<div
+				class="relative flex-1 rounded-2xl bg-white p-6 shadow-xl dark:border dark:border-zinc-800 dark:bg-black"
+			>
+				<div class="card-content">
+					<h3 class="caveat-font mb-5 text-xl font-bold text-black dark:text-white">Platforms</h3>
+					<div class="flex flex-col gap-4">
+						<a
+							href="https://filedrop.imanandhu.in"
+							target="_blank"
+							rel="noopener noreferrer"
+							class="group flex items-center gap-4 rounded-xl border border-zinc-100 bg-zinc-50 p-4 transition-all duration-200 hover:border-indigo-200 hover:bg-indigo-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-indigo-900 dark:hover:bg-zinc-800"
+						>
+							<div class="flex h-10 w-10 items-center justify-center rounded-lg bg-white shadow-sm dark:bg-zinc-800">
+								<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-600">
+									<circle cx="12" cy="12" r="10"/>
+									<line x1="2" y1="12" x2="22" y2="12"/>
+									<path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+								</svg>
+							</div>
+							<div class="flex-1">
+								<p class="text-sm font-semibold text-black dark:text-white">Web Client</p>
+								<p class="text-xs text-zinc-400">filedrop.imanandhu.in</p>
+							</div>
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-zinc-300 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-indigo-500">
+								<polyline points="9 18 15 12 9 6"/>
+							</svg>
+						</a>
+
+						<div class="flex items-center gap-4 rounded-xl border border-zinc-100 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-900">
+							<div class="flex h-10 w-10 items-center justify-center rounded-lg bg-white shadow-sm dark:bg-zinc-800">
+								<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-600">
+									<rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+									<line x1="8" y1="21" x2="16" y2="21"/>
+									<line x1="12" y1="17" x2="12" y2="21"/>
+								</svg>
+							</div>
+							<div class="flex-1">
+								<p class="text-sm font-semibold text-black dark:text-white">Desktop Client</p>
+								<p class="text-xs text-zinc-400">Wails · Go + Web</p>
+							</div>
+							<span class="rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400">Wails</span>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Problem / Solution Card -->
+			<div
+				class="relative flex-1 rounded-2xl bg-white p-6 shadow-xl dark:border dark:border-zinc-800 dark:bg-black"
+			>
+				<div class="card-content">
+					<h3 class="caveat-font mb-5 text-xl font-bold text-black dark:text-white">
+						The Problem
+					</h3>
+					<p class="text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+						Traditional file sharing options often require setting up accounts, paying for cloud storage, or dealing with complex device-specific configurations (like AirDrop or Nearby Share). This creates friction when sharing files across different platforms.
+					</p>
+					<div class="mt-4 border-t border-zinc-100 pt-4 dark:border-zinc-800">
+						<h3 class="caveat-font mb-2 text-xl font-bold text-black dark:text-white">
+							The Solution
+						</h3>
+						<p class="text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+							FileDrop provides a frictionless, web-based experience. By using short pairing codes and signed Cloudflare R2 URLs, users can upload files and retrieve them on any platform without an account, with automatic object cleanup post-transfer.
+						</p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
 	<!-- More coming soon -->
 	<div
 		class="relative flex flex-col items-center gap-2 rounded-2xl border border-dashed border-zinc-200 p-8 dark:border-zinc-800"
@@ -335,6 +608,54 @@
 		background-image: radial-gradient(
 			ellipse at top right,
 			rgba(30, 58, 138, 0.15) 0%,
+			transparent 60%
+		);
+	}
+
+	.transfer-pulse {
+		animation: pulse-move 2.5s infinite linear;
+	}
+
+	@keyframes pulse-move {
+		0% {
+			left: -40%;
+		}
+		100% {
+			left: 140%;
+		}
+	}
+
+	.progress-bar-fill {
+		animation: fill-progress 5s infinite ease-in-out;
+	}
+
+	@keyframes fill-progress {
+		0% {
+			width: 0%;
+		}
+		10% {
+			width: 15%;
+		}
+		40% {
+			width: 65%;
+		}
+		75%, 100% {
+			width: 100%;
+		}
+	}
+
+	.filedrop-hero {
+		background-image: radial-gradient(
+			ellipse at top right,
+			rgba(224, 231, 255, 0.3) 0%,
+			transparent 60%
+		);
+	}
+
+	:global(.dark) .filedrop-hero {
+		background-image: radial-gradient(
+			ellipse at top right,
+			rgba(49, 46, 129, 0.15) 0%,
 			transparent 60%
 		);
 	}
