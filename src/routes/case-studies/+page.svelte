@@ -74,6 +74,43 @@
 		{ label: 'Wails', icon: null, emoji: '🦅' },
 		{ label: 'Cloudflare R2', icon: null, emoji: '☁️' }
 	];
+
+	// Case Study 03: SysInfo Pro data
+	const sysinfoproTags = ['Go', 'Svelte', 'Wails', 'TypeScript', 'Windows'];
+
+	const sysinfoproFeatures = [
+		{
+			icon: '🧠',
+			title: 'RAM Velocity Forecast',
+			description:
+				'Tracks real-time memory consumption velocity (MB/s) and predicts Out-of-Memory slowdowns before they freeze your system.'
+		},
+		{
+			icon: '⚡',
+			title: 'Multi-Stream Speed Test',
+			description:
+				'4-stream CDN speed engine measuring download/upload (Mbps), ping, jitter, and packet loss with M-Lab precision.'
+		},
+		{
+			icon: '🖼️',
+			title: '1-Click Spec Card Exporter',
+			description:
+				'Generates a high-resolution PNG hardware spec card saved to Downloads — perfect for sharing on GitHub or social media.'
+		},
+		{
+			icon: '🔋',
+			title: 'Battery Longevity Analytics',
+			description:
+				'Detailed laptop battery health: degradation %, design vs. current capacity, cycle estimates, and per-process energy impact scores.'
+		}
+	];
+
+	const sysinfoproStack = [
+		{ label: 'Go', icon: '/icons/go.webp', invert: false },
+		{ label: 'Svelte', icon: '/icons/svelte.webp', invert: false },
+		{ label: 'Wails', icon: null, emoji: '🦅' },
+		{ label: 'TypeScript', icon: '/icons/ts.webp', invert: false }
+	];
 </script>
 
 <svelte:head>
@@ -573,6 +610,247 @@
 		</div>
 	</div>
 
+	<!-- SysInfo Pro Case Study -->
+	<div class="flex flex-col gap-4">
+		<!-- Project Hero Card -->
+		<div
+			class="sysinfopro-hero relative overflow-hidden rounded-2xl bg-white p-8 shadow-2xl dark:border dark:border-zinc-800 dark:bg-black"
+		>
+			<div class="card-content flex flex-col gap-6 md:flex-row md:items-start md:gap-10">
+				<!-- Left: Info -->
+				<div class="flex flex-1 flex-col gap-4">
+					<div class="flex items-center gap-3">
+						<div class="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-600 text-2xl shadow-lg">
+							🖥️
+						</div>
+						<div>
+							<p class="text-xs font-medium tracking-wider text-emerald-600 uppercase">Case Study 03</p>
+							<h2 class="text-2xl font-bold text-black dark:text-white">SysInfo Pro</h2>
+						</div>
+					</div>
+
+					<p class="text-base leading-relaxed text-zinc-500 dark:text-zinc-400">
+						System Telemetry Redefined with Elegance. An ultra-clean, information-dense
+						desktop utility for Windows — real-time RAM forecasting, multi-stream speed
+						testing, spec card export, and deep battery analytics. Zero install required.
+					</p>
+
+					<!-- Tech Tags -->
+					<div class="flex flex-wrap gap-2">
+						{#each sysinfoproTags as tag}
+							<span
+								class="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs font-medium text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+							>
+								{tag}
+							</span>
+						{/each}
+					</div>
+
+					<!-- CTA -->
+					<div class="mt-2 flex flex-wrap gap-3">
+						<a
+							href="https://sysinfopro.imanandhu.in"
+							target="_blank"
+							rel="noopener noreferrer"
+							class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:bg-emerald-700 hover:shadow-lg"
+						>
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+								<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+								<polyline points="15 3 21 3 21 9"/>
+								<line x1="10" y1="14" x2="21" y2="3"/>
+							</svg>
+							Visit Site
+						</a>
+						<span
+							class="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-5 py-2.5 text-sm font-semibold text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+						>
+							<span class="h-2 w-2 animate-pulse rounded-full bg-emerald-500"></span>
+							Windows Desktop
+						</span>
+					</div>
+				</div>
+
+				<!-- Right: System metrics mini-UI -->
+				<div class="flex shrink-0 flex-col items-center justify-center gap-4 md:w-64">
+					<div class="sysinfo-visual w-full rounded-xl bg-zinc-900 p-4">
+						<p class="mb-3 text-xs font-semibold tracking-widest text-zinc-500 uppercase">Live Telemetry</p>
+						<div class="flex flex-col gap-3">
+							<!-- CPU -->
+							<div>
+								<div class="mb-1 flex items-center justify-between">
+									<span class="text-xs font-medium text-zinc-400">CPU</span>
+									<span class="cpu-val text-xs font-semibold text-emerald-400">34%</span>
+								</div>
+								<div class="h-1.5 w-full overflow-hidden rounded-full bg-zinc-800">
+									<div class="cpu-bar h-full rounded-full bg-emerald-500"></div>
+								</div>
+							</div>
+							<!-- RAM -->
+							<div>
+								<div class="mb-1 flex items-center justify-between">
+									<span class="text-xs font-medium text-zinc-400">RAM</span>
+									<span class="text-xs font-semibold text-sky-400">9.2 GB</span>
+								</div>
+								<div class="h-1.5 w-full overflow-hidden rounded-full bg-zinc-800">
+									<div class="ram-bar h-full rounded-full bg-sky-500"></div>
+								</div>
+							</div>
+							<!-- Disk -->
+							<div>
+								<div class="mb-1 flex items-center justify-between">
+									<span class="text-xs font-medium text-zinc-400">Disk</span>
+									<span class="text-xs font-semibold text-violet-400">412 GB</span>
+								</div>
+								<div class="h-1.5 w-full overflow-hidden rounded-full bg-zinc-800">
+									<div class="disk-bar h-full rounded-full bg-violet-500"></div>
+								</div>
+							</div>
+							<!-- Network -->
+							<div class="mt-1 flex items-center justify-between rounded-lg bg-zinc-800 px-3 py-2">
+								<div class="flex items-center gap-1.5">
+									<span class="text-xs text-zinc-500">↓</span>
+									<span class="text-xs font-semibold text-emerald-400">112 Mbps</span>
+								</div>
+								<div class="flex items-center gap-1.5">
+									<span class="text-xs text-zinc-500">↑</span>
+									<span class="text-xs font-semibold text-orange-400">24 Mbps</span>
+								</div>
+							</div>
+						</div>
+					</div>
+					<p class="text-center text-xs text-zinc-400">Real-time system telemetry view</p>
+				</div>
+			</div>
+
+			<!-- Decorative blur blobs -->
+			<div class="pointer-events-none absolute -top-16 -right-16 h-48 w-48 rounded-full bg-emerald-100 opacity-30 blur-3xl dark:bg-emerald-900"></div>
+			<div class="pointer-events-none absolute -bottom-12 -left-12 h-40 w-40 rounded-full bg-emerald-50 opacity-40 blur-2xl dark:bg-emerald-950"></div>
+		</div>
+
+		<!-- Features Grid -->
+		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+			{#each sysinfoproFeatures as feature}
+				<div
+					class="feature-card relative flex flex-col gap-3 rounded-2xl bg-white p-6 shadow-xl transition-transform duration-200 hover:-translate-y-1 dark:border dark:border-zinc-800 dark:bg-black"
+				>
+					<div class="card-content">
+						<div class="mb-3 text-3xl">{feature.icon}</div>
+						<h3 class="caveat-font text-lg font-semibold text-black dark:text-white">
+							{feature.title}
+						</h3>
+						<p class="mt-1 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+							{feature.description}
+						</p>
+					</div>
+				</div>
+			{/each}
+		</div>
+
+		<!-- Tech Stack + Platforms Row -->
+		<div class="flex flex-col gap-4 md:flex-row">
+			<!-- Tech Stack Card -->
+			<div
+				class="relative flex-1 rounded-2xl bg-white p-6 shadow-xl dark:border dark:border-zinc-800 dark:bg-black"
+			>
+				<div class="card-content">
+					<h3 class="caveat-font mb-5 text-xl font-bold text-black dark:text-white">Tech Stack</h3>
+					<div class="grid grid-cols-2 gap-4">
+						{#each sysinfoproStack as tech}
+							<div class="flex items-center gap-3 rounded-xl bg-zinc-50 p-3 dark:bg-zinc-900">
+								{#if tech.icon}
+									<img
+										src={tech.icon}
+										alt={tech.label}
+										class="h-8 w-8 {tech.invert ? 'dark:invert' : ''}"
+										width="32"
+										height="32"
+										loading="lazy"
+									/>
+								{:else}
+									<span class="text-2xl">{tech.emoji}</span>
+								{/if}
+								<span class="text-sm font-medium text-zinc-700 dark:text-zinc-300">{tech.label}</span>
+							</div>
+						{/each}
+					</div>
+				</div>
+			</div>
+
+			<!-- Platforms Card -->
+			<div
+				class="relative flex-1 rounded-2xl bg-white p-6 shadow-xl dark:border dark:border-zinc-800 dark:bg-black"
+			>
+				<div class="card-content">
+					<h3 class="caveat-font mb-5 text-xl font-bold text-black dark:text-white">Platforms</h3>
+					<div class="flex flex-col gap-4">
+						<a
+							href="https://sysinfopro.imanandhu.in"
+							target="_blank"
+							rel="noopener noreferrer"
+							class="group flex items-center gap-4 rounded-xl border border-zinc-100 bg-zinc-50 p-4 transition-all duration-200 hover:border-emerald-200 hover:bg-emerald-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-emerald-900 dark:hover:bg-zinc-800"
+						>
+							<div class="flex h-10 w-10 items-center justify-center rounded-lg bg-white shadow-sm dark:bg-zinc-800">
+								<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-600">
+									<circle cx="12" cy="12" r="10"/>
+									<line x1="2" y1="12" x2="22" y2="12"/>
+									<path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+								</svg>
+							</div>
+							<div class="flex-1">
+								<p class="text-sm font-semibold text-black dark:text-white">Landing Page</p>
+								<p class="text-xs text-zinc-400">sysinfopro.imanandhu.in</p>
+							</div>
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-zinc-300 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-emerald-500">
+								<polyline points="9 18 15 12 9 6"/>
+							</svg>
+						</a>
+
+						<div class="flex items-center gap-4 rounded-xl border border-zinc-100 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-900">
+							<div class="flex h-10 w-10 items-center justify-center rounded-lg bg-white shadow-sm dark:bg-zinc-800">
+								<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-600">
+									<rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+									<line x1="8" y1="21" x2="16" y2="21"/>
+									<line x1="12" y1="17" x2="12" y2="21"/>
+								</svg>
+							</div>
+							<div class="flex-1">
+								<p class="text-sm font-semibold text-black dark:text-white">Windows Desktop App</p>
+								<p class="text-xs text-zinc-400">Wails · Go + Svelte · Single .exe</p>
+							</div>
+							<span class="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">v2.0</span>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Problem / Solution Card -->
+			<div
+				class="relative flex-1 rounded-2xl bg-white p-6 shadow-xl dark:border dark:border-zinc-800 dark:bg-black"
+			>
+				<div class="card-content">
+					<h3 class="caveat-font mb-5 text-xl font-bold text-black dark:text-white">
+						The Problem
+					</h3>
+					<p class="text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+						Existing system monitors are either too bloated, require installation and background
+						services, or surface raw numbers without any predictive insight — leaving developers
+						and power users reacting to problems instead of preventing them.
+					</p>
+					<div class="mt-4 border-t border-zinc-100 pt-4 dark:border-zinc-800">
+						<h3 class="caveat-font mb-2 text-xl font-bold text-black dark:text-white">
+							The Solution
+						</h3>
+						<p class="text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+							SysInfo Pro ships as a single portable .exe — no install, no bloat, no
+							background services. Built with Go + Wails for native performance and Svelte
+							for a clean UI, it turns raw hardware data into actionable intelligence.
+						</p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
 	<!-- More coming soon -->
 	<div
 		class="relative flex flex-col items-center gap-2 rounded-2xl border border-dashed border-zinc-200 p-8 dark:border-zinc-800"
@@ -658,5 +936,48 @@
 			rgba(49, 46, 129, 0.15) 0%,
 			transparent 60%
 		);
+	}
+
+	.sysinfopro-hero {
+		background-image: radial-gradient(
+			ellipse at top right,
+			rgba(209, 250, 229, 0.3) 0%,
+			transparent 60%
+		);
+	}
+
+	:global(.dark) .sysinfopro-hero {
+		background-image: radial-gradient(
+			ellipse at top right,
+			rgba(6, 78, 59, 0.15) 0%,
+			transparent 60%
+		);
+	}
+
+	.cpu-bar {
+		width: 34%;
+		animation: cpu-flicker 3s infinite ease-in-out;
+	}
+
+	@keyframes cpu-flicker {
+		0%, 100% { width: 34%; }
+		30% { width: 52%; }
+		60% { width: 28%; }
+		80% { width: 61%; }
+	}
+
+	.ram-bar {
+		width: 58%;
+		animation: ram-creep 8s infinite ease-in-out;
+	}
+
+	@keyframes ram-creep {
+		0% { width: 58%; }
+		50% { width: 65%; }
+		100% { width: 58%; }
+	}
+
+	.disk-bar {
+		width: 41%;
 	}
 </style>
