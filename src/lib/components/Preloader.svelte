@@ -155,14 +155,15 @@
 		transition: transform 0.95s cubic-bezier(0.83, 0, 0.17, 1);
 	}
 
+	/* No accent border on the meeting edges. The two shutters overlap at the
+	   midpoint, so a border on each produced one bright line straight across
+	   the viewport — through the boot log — for the whole load. */
 	.shutter.top {
 		top: 0;
-		border-bottom: 1px solid rgba(43, 245, 192, 0.25);
 	}
 
 	.shutter.bottom {
 		bottom: 0;
-		border-top: 1px solid rgba(43, 245, 192, 0.25);
 	}
 
 	.done .shutter.top {
