@@ -3,6 +3,13 @@
 	import '@fontsource-variable/geist';
 	import '@fontsource-variable/jetbrains-mono';
 
+	// Imported as URLs purely so the preload hints below point at the hashed,
+	// cache-busted filenames. Without these the fonts are only discovered once
+	// the stylesheet has parsed, which costs an extra round trip on slow links
+	// exactly when the largest text is waiting to paint.
+	import geistLatin from '@fontsource-variable/geist/files/geist-latin-wght-normal.woff2?url';
+	import monoLatin from '@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2?url';
+
 	import { page } from '$app/state';
 	import Backdrop from '$lib/components/Backdrop.svelte';
 	import Preloader from '$lib/components/Preloader.svelte';
@@ -21,6 +28,10 @@
 	/>
 	<meta name="theme-color" content="#050506" />
 	<link rel="icon" href="/favicon.ico" />
+	<link rel="canonical" href="https://imanandhu.in{page.url.pathname}" />
+
+	<link rel="preload" href={geistLatin} as="font" type="font/woff2" crossorigin="anonymous" />
+	<link rel="preload" href={monoLatin} as="font" type="font/woff2" crossorigin="anonymous" />
 
 	<meta property="og:type" content="website" />
 	<meta property="og:title" content="Anandhu Remanan — Software Engineer" />

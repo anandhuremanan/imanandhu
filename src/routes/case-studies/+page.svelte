@@ -2,6 +2,32 @@
 	import { reveal, magnetic, scramble } from '$lib/actions';
 	import { projects } from '$lib/data/projects';
 	import Telemetry from '$lib/components/Telemetry.svelte';
+
+	/**
+	 * An ItemList of SoftwareSourceCode entries. This is the machine-readable
+	 * version of the page: search engines get a rich result, and answer engines
+	 * that read structured data get the stack and summary without having to
+	 * infer them from prose.
+	 */
+	const schema = {
+		'@context': 'https://schema.org',
+		'@type': 'ItemList',
+		name: 'Case Studies — Anandhu Remanan',
+		itemListElement: projects.map((p, i) => ({
+			'@type': 'ListItem',
+			position: i + 1,
+			item: {
+				'@type': 'SoftwareSourceCode',
+				name: p.name,
+				description: p.summary,
+				url: p.live,
+				...(p.repo ? { codeRepository: p.repo } : {}),
+				programmingLanguage: p.tags,
+				author: { '@type': 'Person', name: 'Anandhu Remanan', url: 'https://imanandhu.in' },
+				dateCreated: p.year
+			}
+		}))
+	};
 </script>
 
 <svelte:head>
@@ -15,6 +41,7 @@
 		property="og:description"
 		content="In-depth case studies of projects built by Anandhu Remanan — real problems, real solutions, and the engineering decisions behind them."
 	/>
+	{@html `<script type="application/ld+json">${JSON.stringify(schema)}</script>`}
 </svelte:head>
 
 <!-- Page header -->
@@ -459,7 +486,7 @@
 	.pl-detail {
 		grid-column: 1;
 		font-size: 0.625rem;
-		color: #55555f;
+		color: #83838e;
 	}
 
 	.pl-arrow,
@@ -470,7 +497,7 @@
 	}
 
 	.pl-arrow {
-		color: #55555f;
+		color: #83838e;
 		transition:
 			transform 0.45s var(--ease-out-expo),
 			color 0.4s ease;
@@ -509,7 +536,7 @@
 
 	.more-inner p {
 		margin: 0;
-		color: #55555f;
+		color: #83838e;
 	}
 
 	.ghost-btn {

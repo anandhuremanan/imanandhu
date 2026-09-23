@@ -226,13 +226,13 @@
 	.handle {
 		grid-column: 1;
 		font-size: 0.625rem;
-		color: #55555f;
+		color: #83838e;
 	}
 
 	.arrow {
 		grid-row: 1;
 		grid-column: 2;
-		color: #55555f;
+		color: #83838e;
 		transition:
 			transform 0.45s var(--ease-out-expo),
 			color 0.35s ease;

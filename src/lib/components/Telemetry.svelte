@@ -137,7 +137,7 @@
 	}
 
 	.dim {
-		color: #55555f;
+		color: #83838e;
 	}
 
 	.cap {
@@ -162,7 +162,7 @@
 		width: 7px;
 		height: 7px;
 		border-radius: 999px;
-		border: 1px solid #55555f;
+		border: 1px solid #83838e;
 		flex-shrink: 0;
 	}
 
@@ -344,7 +344,7 @@
 
 	.tok {
 		flex-shrink: 0;
-		color: #55555f;
+		color: #83838e;
 	}
 
 	.tok.ok {

@@ -35,9 +35,11 @@
 />
 
 <header class="nav" class:scrolled>
-	<a href="/" class="mark" aria-label="Anandhu Remanan, home">
-		<span class="glyph">AR</span>
-		<span class="wordmark mono">ANANDHU&nbsp;REMANAN</span>
+	<!-- The accessible name has to contain the visible text (WCAG 2.5.3), so the
+	     decorative monogram is hidden and the label matches the wordmark. -->
+	<a href="/" class="mark" aria-label="Anandhu Remanan">
+		<span class="glyph" aria-hidden="true">AR</span>
+		<span class="wordmark mono">ANANDHU REMANAN</span>
 	</a>
 
 	<nav class="links" aria-label="Primary">
@@ -149,6 +151,7 @@
 		font-size: 0.6875rem;
 		letter-spacing: 0.16em;
 		color: #94949e;
+		white-space: nowrap;
 	}
 
 	@media (max-width: 560px) {
@@ -184,7 +187,7 @@
 	.link .n {
 		font-size: 0.5625rem;
 		letter-spacing: 0.1em;
-		color: #55555f;
+		color: #83838e;
 		transition: color 0.35s ease;
 	}
 
@@ -369,7 +372,7 @@
 
 	.sheet-link .n {
 		font-size: 0.6875rem;
-		color: #55555f;
+		color: #83838e;
 	}
 
 	.sheet-link.active {

@@ -127,7 +127,7 @@
 
 	.handle {
 		font-size: 0.6875rem;
-		color: #55555f;
+		color: #83838e;
 	}
 
 	.base {

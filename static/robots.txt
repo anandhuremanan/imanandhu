@@ -1,3 +1,19 @@
 # allow crawling everything by default
 User-agent: *
 Disallow:
+
+# Answer engines and LLM crawlers are welcome — the content is server-rendered,
+# so it is readable without executing JavaScript.
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+Sitemap: https://imanandhu.in/sitemap.xml

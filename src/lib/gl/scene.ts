@@ -36,10 +36,12 @@ export function createScene(canvas: HTMLCanvasElement): SceneHandle {
 	const group = new THREE.Group();
 	scene.add(group);
 
-	// Particle count scales with the device, not the window.
+	// Particle count scales with the device, not the window. These are tuned
+	// down from the visually-indistinguishable ceiling: past roughly 20k the
+	// field stops looking denser and just costs buffer-build and fill time.
 	const mem = (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 4;
 	const coarse = window.matchMedia('(pointer: coarse)').matches;
-	const COUNT = coarse || mem <= 4 ? 11000 : mem <= 8 ? 22000 : 34000;
+	const COUNT = coarse || mem <= 4 ? 6500 : mem <= 8 ? 13000 : 20000;
 
 	// Fibonacci sphere: even coverage without the pole clustering of naive uv.
 	const positions = new Float32Array(COUNT * 3);

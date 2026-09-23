@@ -12,7 +12,7 @@
 	--color-line-2: rgba(255, 255, 255, 0.16);
 	--color-ink: #f0f0f2;
 	--color-dim: #94949e;
-	--color-faint: #55555f;
+	--color-faint: #83838e;
 	--color-accent: #2bf5c0;
 	--color-violet: #7c5cff;
 	--color-amber: #ffb03a;
@@ -107,7 +107,7 @@ body {
 	line-height: 1;
 	letter-spacing: 0.18em;
 	text-transform: uppercase;
-	color: #55555f;
+	color: #83838e;
 }
 
 .label-accent {

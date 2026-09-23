@@ -11,14 +11,53 @@
 	// dense text over the same canvas, so the field steps back there.
 	const quiet = $derived(page.url.pathname !== '/');
 
+	interface NetInfo {
+		saveData?: boolean;
+		effectiveType?: string;
+	}
+
+	/**
+	 * three plus the scene is ~110KB brotli and costs real main-thread time to
+	 * compile shaders and build the buffers. That is a fair trade on a capable
+	 * device and a bad one on a slow link or a weak phone, where it would eat
+	 * the bandwidth the actual content needs. In those cases we never fetch it
+	 * and the CSS gradient stays as the backdrop.
+	 */
+	function shouldLoadScene() {
+		const net = (navigator as Navigator & { connection?: NetInfo }).connection;
+		if (net?.saveData) return false;
+		if (net?.effectiveType && /(^|-)2g$|^3g$/.test(net.effectiveType)) return false;
+
+		const mem = (navigator as Navigator & { deviceMemory?: number }).deviceMemory;
+		if (mem !== undefined && mem <= 2) return false;
+		if (navigator.hardwareConcurrency !== undefined && navigator.hardwareConcurrency <= 2) {
+			return false;
+		}
+		return true;
+	}
+
+	/** Run once the main thread is actually free, with a hard upper bound. */
+	function whenIdle(fn: () => void) {
+		const ric = (window as Window & { requestIdleCallback?: typeof requestIdleCallback })
+			.requestIdleCallback;
+		if (ric) ric(() => fn(), { timeout: 2500 });
+		else setTimeout(fn, 900);
+	}
+
 	onMount(() => {
 		let handle: SceneHandle | undefined;
 		let onScroll: (() => void) | undefined;
 		let cancelled = false;
 
-		// three is ~150KB, so it loads after the document is interactive rather
-		// than blocking first paint. The CSS fallback covers the gap.
-		(async () => {
+		if (!shouldLoadScene()) {
+			failed = true;
+			return;
+		}
+
+		// Deliberately after hydration settles: importing during hydration made
+		// the two compete for the main thread and pushed interactivity out.
+		whenIdle(async () => {
+			if (cancelled) return;
 			try {
 				const { createScene } = await import('$lib/gl/scene');
 				if (cancelled) return;
@@ -34,7 +73,7 @@
 				// No WebGL, or the context was refused: fall back to the gradient.
 				failed = true;
 			}
-		})();
+		});
 
 		return () => {
 			cancelled = true;

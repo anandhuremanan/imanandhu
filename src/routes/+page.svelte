@@ -544,7 +544,7 @@
 	}
 
 	.muted {
-		color: #55555f;
+		color: #83838e;
 	}
 
 	.about-body p {
@@ -631,7 +631,7 @@
 	.work-n {
 		grid-area: n;
 		font-size: 0.6875rem;
-		color: #55555f;
+		color: #83838e;
 		transition: color 0.4s ease;
 	}
 
@@ -664,13 +664,13 @@
 	.work-year {
 		grid-area: year;
 		font-size: 0.6875rem;
-		color: #55555f;
+		color: #83838e;
 	}
 
 	.work-arrow {
 		grid-area: arrow;
 		font-size: 1.1rem;
-		color: #55555f;
+		color: #83838e;
 		transition:
 			transform 0.5s var(--ease-out-expo),
 			color 0.4s ease;
@@ -810,7 +810,7 @@
 		position: absolute;
 		top: 1.5rem;
 		right: 1.5rem;
-		color: #55555f;
+		color: #83838e;
 		transition:
 			transform 0.5s var(--ease-out-expo),
 			color 0.4s ease;

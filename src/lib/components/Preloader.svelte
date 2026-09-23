@@ -131,7 +131,7 @@
 		margin-top: 1.1rem;
 		font-size: 0.6875rem;
 		line-height: 1.7;
-		color: #55555f;
+		color: #83838e;
 		min-height: 4.8rem;
 	}
 
