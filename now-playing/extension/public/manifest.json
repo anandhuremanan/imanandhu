@@ -1,0 +1,33 @@
+{
+	"manifest_version": 3,
+	"name": "Now Playing — imanandhu.in",
+	"version": "1.0.0",
+	"description": "Publishes the current YouTube Music track to the imanandhu.in now-playing room.",
+	"permissions": ["storage", "alarms"],
+	"host_permissions": ["https://music.youtube.com/*"],
+	"background": {
+		"service_worker": "background.js",
+		"type": "module"
+	},
+	"content_scripts": [
+		{
+			"matches": ["https://music.youtube.com/*"],
+			"js": ["content.js"],
+			"run_at": "document_idle"
+		},
+		{
+			"matches": ["https://music.youtube.com/*"],
+			"js": ["youtubeMusic.js"],
+			"run_at": "document_idle",
+			"world": "MAIN"
+		}
+	],
+	"options_ui": {
+		"page": "options.html",
+		"open_in_tab": true
+	},
+	"action": {
+		"default_popup": "options.html",
+		"default_title": "Now Playing"
+	}
+}

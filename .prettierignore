@@ -7,3 +7,7 @@ bun.lockb
 
 # Miscellaneous
 /static/
+
+# now-playing sub-projects: build output and deps
+now-playing/**/dist
+now-playing/**/node_modules

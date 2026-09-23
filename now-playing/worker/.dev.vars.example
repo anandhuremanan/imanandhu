@@ -1,0 +1,7 @@
+# Local development secrets for `wrangler dev`.
+# Copy to `.dev.vars` (git-ignored) and set your own value.
+#
+#   cp .dev.vars.example .dev.vars
+#
+# In production this is set with:  wrangler secret put OWNER_TOKEN
+OWNER_TOKEN="local-dev-token-change-me"

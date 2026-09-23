@@ -1,0 +1,41 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "now-playing",
+	"main": "src/index.ts",
+	// `cloudflare:workers` and the Durable Object APIs are built into the
+	// runtime, so no compatibility flags are needed here.
+	"compatibility_date": "2025-09-01",
+
+	"observability": {
+		"enabled": true
+	},
+
+	"durable_objects": {
+		"bindings": [
+			{
+				"name": "NOW_PLAYING_ROOM",
+				"class_name": "NowPlayingRoomDO"
+			}
+		]
+	},
+
+	// SQLite-backed Durable Objects are the current default class for new
+	// namespaces. This is the DO's own storage — no D1, KV or R2 involved.
+	"migrations": [
+		{
+			"tag": "v1",
+			"new_sqlite_classes": ["NowPlayingRoomDO"]
+		}
+	],
+
+	"vars": {
+		// Which browser origins may open a visitor socket. Comma-separated.
+		// Loopback origins (localhost / 127.0.0.1, any port) are always allowed,
+		// so local development needs no entry here. Leave the value empty to
+		// allow any origin at all.
+		//
+		// OWNER_TOKEN is deliberately NOT here: it is a secret, set once with
+		//   wrangler secret put OWNER_TOKEN
+		"ALLOWED_ORIGINS": "https://imanandhu.in,https://www.imanandhu.in"
+	}
+}

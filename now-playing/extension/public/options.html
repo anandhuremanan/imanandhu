@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title>Now Playing — settings</title>
+		<style>
+			:root {
+				color-scheme: dark;
+				--accent: #2bf5c0;
+				--line: rgba(255, 255, 255, 0.14);
+			}
+			body {
+				margin: 0;
+				padding: 18px;
+				width: 320px;
+				background: #0a0a0c;
+				color: #f0f0f2;
+				font:
+					13px/1.5 ui-sans-serif,
+					system-ui,
+					sans-serif;
+			}
+			h1 {
+				margin: 0 0 14px;
+				font-size: 13px;
+				letter-spacing: 0.14em;
+				text-transform: uppercase;
+				color: #83838e;
+				font-weight: 500;
+			}
+			.status {
+				display: flex;
+				align-items: center;
+				gap: 8px;
+				padding: 10px 12px;
+				border: 1px solid var(--line);
+				border-radius: 2px;
+				margin-bottom: 14px;
+			}
+			#dot {
+				width: 8px;
+				height: 8px;
+				border-radius: 99px;
+				background: #83838e;
+				flex-shrink: 0;
+			}
+			#dot[data-state='connected'] {
+				background: var(--accent);
+			}
+			#dot[data-state='error'] {
+				background: #fb7185;
+			}
+			#dot[data-state='connecting'],
+			#dot[data-state='authenticating'] {
+				background: #ffb03a;
+			}
+			label {
+				display: block;
+				margin: 12px 0 5px;
+				font-size: 11px;
+				letter-spacing: 0.1em;
+				text-transform: uppercase;
+				color: #83838e;
+			}
+			input {
+				width: 100%;
+				box-sizing: border-box;
+				background: rgba(255, 255, 255, 0.05);
+				border: 1px solid var(--line);
+				border-radius: 2px;
+				padding: 8px 10px;
+				color: #f0f0f2;
+				font:
+					12px ui-monospace,
+					monospace;
+			}
+			input:focus {
+				outline: none;
+				border-color: var(--accent);
+			}
+			.row {
+				display: flex;
+				gap: 8px;
+				margin-top: 16px;
+			}
+			button {
+				flex: 1;
+				padding: 9px;
+				border-radius: 2px;
+				border: 1px solid var(--line);
+				background: transparent;
+				color: #f0f0f2;
+				font-size: 11px;
+				letter-spacing: 0.1em;
+				text-transform: uppercase;
+				cursor: pointer;
+			}
+			button[type='submit'] {
+				background: var(--accent);
+				border-color: var(--accent);
+				color: #050506;
+				font-weight: 600;
+			}
+			p.note {
+				margin: 10px 0 0;
+				font-size: 11px;
+				color: #83838e;
+			}
+			#saved {
+				color: var(--accent);
+			}
+			#detail {
+				color: #fb7185;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>Now Playing</h1>
+
+		<div class="status">
+			<span id="dot"></span>
+			<span id="statusText">Disconnected</span>
+		</div>
+		<p class="note" id="detail" hidden></p>
+		<p class="note" id="track" hidden></p>
+
+		<form id="settings">
+			<label for="wsUrl">Worker WebSocket URL</label>
+			<input id="wsUrl" name="wsUrl" type="text" spellcheck="false" placeholder="wss://…/ws" />
+
+			<label for="ownerToken">Owner token</label>
+			<input
+				id="ownerToken"
+				name="ownerToken"
+				type="password"
+				spellcheck="false"
+				autocomplete="off"
+				placeholder="matches the worker secret"
+			/>
+
+			<div class="row">
+				<button type="submit">Save</button>
+				<button type="button" id="reconnect">Reconnect</button>
+			</div>
+			<p class="note" id="saved" hidden>Saved.</p>
+		</form>
+
+		<script type="module" src="options.js"></script>
+	</body>
+</html>

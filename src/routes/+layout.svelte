@@ -16,6 +16,7 @@
 	import Cursor from '$lib/components/Cursor.svelte';
 	import Nav from '$lib/components/Nav.svelte';
 	import Footer from '$lib/components/Footer.svelte';
+	import NowPlaying from '$lib/components/NowPlaying.svelte';
 
 	let { children } = $props();
 </script>
@@ -69,6 +70,10 @@
 {/key}
 
 <Footer />
+
+<!-- Fixed overlay; renders nothing unless PUBLIC_NOW_PLAYING_WS is set and the
+     room reports a state. -->
+<NowPlaying />
 
 <style>
 	.shell {

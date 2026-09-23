@@ -1,0 +1,16 @@
+{
+	"compilerOptions": {
+		"target": "es2022",
+		"lib": ["es2022", "dom", "dom.iterable"],
+		"module": "es2022",
+		"moduleResolution": "bundler",
+		"types": ["chrome"],
+		"strict": true,
+		"noUncheckedIndexedAccess": true,
+		"noEmit": true,
+		"skipLibCheck": true,
+		"isolatedModules": true,
+		"forceConsistentCasingInFileNames": true
+	},
+	"include": ["src/**/*.ts", "build.mjs"]
+}
