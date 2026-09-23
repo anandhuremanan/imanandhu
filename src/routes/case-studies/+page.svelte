@@ -1,1084 +1,538 @@
 <script lang="ts">
-	import { fly } from 'svelte/transition';
-
-	// Case Study 01: BusTrack data
-	const bustrackTags = ['Next.js', 'React Native', 'Supabase', 'Tailwind CSS', 'TypeScript'];
-
-	const bustrackStack = [
-		{ label: 'Next.js', icon: '/icons/next.webp', invert: true },
-		{ label: 'React Native', icon: '/icons/react.webp', invert: false },
-		{ label: 'Supabase', icon: null, emoji: '⚡' },
-		{ label: 'TypeScript', icon: '/icons/ts.webp', invert: false }
-	];
-
-	// Case Study 02: FileDrop data
-	const filedropTags = ['Go', 'Next.js', 'Wails', 'Cloudflare R2', 'TypeScript', 'Tailwind CSS'];
-
-	const filedropStack = [
-		{ label: 'Go', icon: '/icons/go.webp', invert: false },
-		{ label: 'Next.js', icon: '/icons/next.webp', invert: true },
-		{ label: 'Wails', icon: null, emoji: '🦅' },
-		{ label: 'Cloudflare R2', icon: null, emoji: '☁️' }
-	];
-
-	// Case Study 03: SysInfo Pro data
-	const sysinfoproTags = ['Go', 'Svelte', 'Wails', 'TypeScript', 'Windows'];
-
-	const sysinfoproStack = [
-		{ label: 'Go', icon: '/icons/go.webp', invert: false },
-		{ label: 'Svelte', icon: '/icons/svelte.webp', invert: false },
-		{ label: 'Wails', icon: null, emoji: '🦅' },
-		{ label: 'TypeScript', icon: '/icons/ts.webp', invert: false }
-	];
+	import { reveal, magnetic, scramble } from '$lib/actions';
+	import { projects } from '$lib/data/projects';
+	import Telemetry from '$lib/components/Telemetry.svelte';
 </script>
 
 <svelte:head>
-	<title>Case Studies | Anandhu Remanan</title>
+	<title>Case Studies — Anandhu Remanan</title>
 	<meta
 		name="description"
 		content="In-depth case studies of projects built by Anandhu Remanan — real problems, real solutions, and the engineering decisions behind them."
 	/>
-	<meta property="og:title" content="Case Studies | Anandhu Remanan" />
+	<meta property="og:title" content="Case Studies — Anandhu Remanan" />
 	<meta
 		property="og:description"
 		content="In-depth case studies of projects built by Anandhu Remanan — real problems, real solutions, and the engineering decisions behind them."
 	/>
 </svelte:head>
 
-<section
-	in:fly={{ y: 20, duration: 600 }}
-	class="flex w-full flex-col gap-12 p-4 md:p-8 lg:px-12 xl:px-32"
->
-	<!-- Page Header -->
-	<div
-		class="relative flex flex-col items-center gap-3 rounded-2xl bg-white p-8 shadow-2xl dark:border dark:border-zinc-800 dark:bg-black"
-	>
-		<div class="card-content text-center">
-			<p class="caveat-font mb-1 text-sm tracking-widest text-blue-600 uppercase">Portfolio</p>
-			<h1 class="caveat-font text-4xl font-bold text-black md:text-5xl dark:text-white">
-				Case Studies
-			</h1>
-			<p class="mt-3 max-w-xl text-zinc-500 dark:text-zinc-400">
-				A close look at the products I've built — the problem, the process, and the decisions that
-				shaped them.
-			</p>
+<!-- Page header -->
+<header class="page-head">
+	<span class="label label-accent">[ 002 / WORK ]</span>
+	<h1 class="display fluid-lg" use:scramble={{ trigger: 'mount' }}>Case Studies</h1>
+	<p>
+		A close look at the products I've built — the problem, the process, and the decisions that
+		shaped them.
+	</p>
+	<div class="head-rule" use:reveal={{ rule: true, delay: 200 }}></div>
+</header>
+
+{#each projects as p (p.id)}
+	<article id={p.id} class="study" style="--accent: {p.accent}">
+		<!-- Sticky rail: index + name stay pinned while the detail scrolls -->
+		<div class="rail">
+			<span class="rail-n mono">{p.index}</span>
+			<h2 class="rail-name display">{p.name}</h2>
+			<span class="label">{p.year}</span>
+			<div class="rail-line"></div>
+			<span class="label status">
+				<i class="pip"></i>
+				{p.status}
+			</span>
 		</div>
-	</div>
 
-	<!-- BusTrack Case Study -->
-	<div class="flex flex-col gap-4">
-		<!-- Project Hero Card -->
-		<div
-			class="case-study-hero relative overflow-hidden rounded-2xl bg-white p-8 shadow-2xl dark:border dark:border-zinc-800 dark:bg-black"
-		>
-			<div class="card-content flex flex-col gap-6 md:flex-row md:items-start md:gap-10">
-				<!-- Left: Info -->
-				<div class="flex flex-1 flex-col gap-4">
-					<div class="flex items-center gap-3">
-						<div
-							class="bus-icon-wrapper flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600 text-2xl shadow-lg"
-						>
-							🚌
-						</div>
-						<div>
-							<p class="text-xs font-medium tracking-wider text-blue-600 uppercase">
-								Case Study 01
-							</p>
-							<h2 class="text-2xl font-bold text-black dark:text-white">BusTrack</h2>
-						</div>
-					</div>
+		<div class="detail">
+			<!-- Summary + tags + CTA -->
+			<section class="block" use:reveal>
+				<p class="summary">{p.summary}</p>
 
-					<p class="text-base leading-relaxed text-zinc-500 dark:text-zinc-400">
-						Predict route timelines, record transit telemetry logs, and analyze historical arrivals.
-						A full-stack transit intelligence platform built for Android and the web.
-					</p>
+				<ul class="tags">
+					{#each p.tags as tag (tag)}
+						<li class="mono">{tag}</li>
+					{/each}
+				</ul>
 
-					<!-- Tech Tags -->
-					<div class="flex flex-wrap gap-2">
-						{#each bustrackTags as tag}
-							<span
-								class="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs font-medium text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
-							>
-								{tag}
-							</span>
-						{/each}
-					</div>
+				<div class="ctas">
+					<a
+						class="live"
+						href={p.live}
+						target="_blank"
+						rel="noopener noreferrer"
+						use:magnetic={{ strength: 0.2 }}
+					>
+						Visit live project
+						<span aria-hidden="true">↗</span>
+					</a>
 
-					<!-- CTA -->
-					<div class="mt-2 flex flex-wrap gap-3">
+					{#if p.repo}
 						<a
-							href="https://bustrack.imanandhu.in"
+							class="source"
+							href={p.repo}
 							target="_blank"
 							rel="noopener noreferrer"
-							class="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-lg"
+							use:magnetic={{ strength: 0.2 }}
 						>
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								width="16"
-								height="16"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							>
-								<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-								<polyline points="15 3 21 3 21 9" />
-								<line x1="10" y1="14" x2="21" y2="3" />
-							</svg>
-							Live Project
+							Source
+							<span aria-hidden="true">↗</span>
 						</a>
-						<span
-							class="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-5 py-2.5 text-sm font-semibold text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
-						>
-							<span class="h-2 w-2 animate-pulse rounded-full bg-green-500"></span>
-							Android + Web
-						</span>
+					{/if}
+				</div>
+			</section>
+
+			<!-- Problem / Solution + telemetry visual -->
+			<section class="split">
+				<div class="prose" use:reveal={{ delay: 80 }}>
+					<div class="qa">
+						<span class="label">The Problem</span>
+						<p>{p.problem}</p>
+					</div>
+					<div class="qa">
+						<span class="label label-accent">The Solution</span>
+						<p>{p.solution}</p>
 					</div>
 				</div>
 
-				<!-- Right: Minimal visual -->
-				<div class="flex shrink-0 flex-col items-center justify-center gap-4 md:w-64">
-					<div class="route-visual w-full rounded-xl bg-zinc-50 p-5 dark:bg-zinc-900">
-						<p class="mb-3 text-xs font-semibold tracking-widest text-zinc-400 uppercase">
-							Live Route
-						</p>
-						<div class="flex flex-col gap-3">
-							<div class="stop-item flex items-center gap-3">
-								<div
-									class="h-3 w-3 rounded-full bg-blue-600 ring-2 ring-blue-200 dark:ring-blue-900"
-								></div>
-								<div class="flex-1">
-									<div class="h-2 w-24 rounded bg-zinc-200 dark:bg-zinc-700"></div>
-								</div>
-								<span class="text-xs text-zinc-400">07:02</span>
-							</div>
-							<div class="ml-1.5 h-5 w-px bg-zinc-200 dark:bg-zinc-700"></div>
-							<div class="stop-item flex items-center gap-3">
-								<div
-									class="h-3 w-3 rounded-full bg-blue-400 ring-2 ring-blue-100 dark:ring-blue-900"
-								></div>
-								<div class="flex-1">
-									<div class="h-2 w-20 rounded bg-zinc-200 dark:bg-zinc-700"></div>
-								</div>
-								<span class="text-xs text-zinc-400">07:14</span>
-							</div>
-							<div class="ml-1.5 h-5 w-px bg-zinc-200 dark:bg-zinc-700"></div>
-							<div class="stop-item flex items-center gap-3">
-								<div
-									class="bus-position h-3 w-3 rounded-full bg-green-500 ring-2 ring-green-200 dark:ring-green-900"
-								></div>
-								<div class="flex-1">
-									<div class="h-2 w-28 rounded bg-zinc-200 dark:bg-zinc-700"></div>
-								</div>
-								<span class="text-xs font-semibold text-green-500">ETA ~3m</span>
-							</div>
-							<div class="bg-dashed ml-1.5 h-5 w-px bg-zinc-200 dark:bg-zinc-700"></div>
-							<div class="stop-item flex items-center gap-3">
-								<div
-									class="h-3 w-3 rounded-full border-2 border-zinc-300 dark:border-zinc-600"
-								></div>
-								<div class="flex-1">
-									<div class="h-2 w-16 rounded bg-zinc-200 dark:bg-zinc-700"></div>
-								</div>
-								<span class="text-xs text-zinc-400">07:31</span>
-							</div>
-						</div>
-					</div>
-					<p class="text-center text-xs text-zinc-400">Real-time route timeline view</p>
+				<div class="visual" use:reveal={{ delay: 160 }}>
+					<Telemetry kind={p.visual} accent={p.accent} />
 				</div>
-			</div>
+			</section>
 
-			<!-- Decorative blur blobs -->
-			<div
-				class="pointer-events-none absolute -top-16 -right-16 h-48 w-48 rounded-full bg-blue-100 opacity-30 blur-3xl dark:bg-blue-900"
-			></div>
-			<div
-				class="pointer-events-none absolute -bottom-12 -left-12 h-40 w-40 rounded-full bg-blue-50 opacity-40 blur-2xl dark:bg-blue-950"
-			></div>
-		</div>
-
-		<!-- Tech Stack + Platforms Row -->
-		<div class="flex flex-col gap-4 md:flex-row">
-			<!-- Tech Stack Card -->
-			<div
-				class="relative flex-1 rounded-2xl bg-white p-6 shadow-xl dark:border dark:border-zinc-800 dark:bg-black"
-			>
-				<div class="card-content">
-					<h3 class="caveat-font mb-5 text-xl font-bold text-black dark:text-white">Tech Stack</h3>
-					<div class="grid grid-cols-2 gap-4">
-						{#each bustrackStack as tech}
-							<div class="flex items-center gap-3 rounded-xl bg-zinc-50 p-3 dark:bg-zinc-900">
-								{#if tech.icon}
+			<!-- Stack + platforms -->
+			<section class="split" use:reveal={{ delay: 80 }}>
+				<div class="col">
+					<span class="label">Tech Stack</span>
+					<ul class="stack">
+						{#each p.stack as t (t.label)}
+							<li>
+								{#if t.icon}
 									<img
-										src={tech.icon}
-										alt={tech.label}
-										class="h-8 w-8 {tech.invert ? 'dark:invert' : ''}"
-										width="32"
-										height="32"
+										src={t.icon}
+										alt=""
+										class:invert={t.invert}
+										width="28"
+										height="28"
 										loading="lazy"
 									/>
 								{:else}
-									<span class="text-2xl">{tech.emoji}</span>
+									<span class="glyph" aria-hidden="true">{t.glyph}</span>
 								{/if}
-								<span class="text-sm font-medium text-zinc-700 dark:text-zinc-300"
-									>{tech.label}</span
-								>
-							</div>
+								<span>{t.label}</span>
+							</li>
 						{/each}
-					</div>
-				</div>
-			</div>
-
-			<!-- Platforms Card -->
-			<div
-				class="relative flex-1 rounded-2xl bg-white p-6 shadow-xl dark:border dark:border-zinc-800 dark:bg-black"
-			>
-				<div class="card-content">
-					<h3 class="caveat-font mb-5 text-xl font-bold text-black dark:text-white">Platforms</h3>
-					<div class="flex flex-col gap-4">
-						<a
-							href="https://bustrack.imanandhu.in"
-							target="_blank"
-							rel="noopener noreferrer"
-							class="group flex items-center gap-4 rounded-xl border border-zinc-100 bg-zinc-50 p-4 transition-all duration-200 hover:border-blue-200 hover:bg-blue-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-blue-900 dark:hover:bg-zinc-800"
-						>
-							<div
-								class="flex h-10 w-10 items-center justify-center rounded-lg bg-white shadow-sm dark:bg-zinc-800"
-							>
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									width="20"
-									height="20"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									stroke-width="2"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									class="text-blue-600"
-								>
-									<circle cx="12" cy="12" r="10" />
-									<line x1="2" y1="12" x2="22" y2="12" />
-									<path
-										d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
-									/>
-								</svg>
-							</div>
-							<div class="flex-1">
-								<p class="text-sm font-semibold text-black dark:text-white">Web Dashboard</p>
-								<p class="text-xs text-zinc-400">bustrack.imanandhu.in</p>
-							</div>
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								width="16"
-								height="16"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								class="text-zinc-300 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-blue-500"
-							>
-								<polyline points="9 18 15 12 9 6" />
-							</svg>
-						</a>
-
-						<div
-							class="flex items-center gap-4 rounded-xl border border-zinc-100 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-900"
-						>
-							<div
-								class="flex h-10 w-10 items-center justify-center rounded-lg bg-white shadow-sm dark:bg-zinc-800"
-							>
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									width="20"
-									height="20"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									stroke-width="2"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									class="text-green-600"
-								>
-									<rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
-									<line x1="12" y1="18" x2="12.01" y2="18" />
-								</svg>
-							</div>
-							<div class="flex-1">
-								<p class="text-sm font-semibold text-black dark:text-white">Android App</p>
-								<p class="text-xs text-zinc-400">React Native · Expo</p>
-							</div>
-							<span
-								class="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400"
-								>Live</span
-							>
-						</div>
-					</div>
-				</div>
-			</div>
-
-			<!-- Problem / Solution Card -->
-			<div
-				class="relative flex-1 rounded-2xl bg-white p-6 shadow-xl dark:border dark:border-zinc-800 dark:bg-black"
-			>
-				<div class="card-content">
-					<h3 class="caveat-font mb-5 text-xl font-bold text-black dark:text-white">The Problem</h3>
-					<p class="text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
-						Commuters had no reliable way to know when their bus would actually arrive. Static
-						schedules didn't reflect real-world delays, traffic, or route changes — leaving people
-						waiting in uncertainty.
-					</p>
-					<div class="mt-4 border-t border-zinc-100 pt-4 dark:border-zinc-800">
-						<h3 class="caveat-font mb-2 text-xl font-bold text-black dark:text-white">
-							The Solution
-						</h3>
-						<p class="text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
-							BusTrack captures live telemetry from buses and uses historical arrival patterns to
-							deliver accurate, dynamic ETAs — accessible from Android and the web, in real time.
-						</p>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-
-	<!-- FileDrop Case Study -->
-	<div class="flex flex-col gap-4">
-		<!-- Project Hero Card -->
-		<div
-			class="filedrop-hero relative overflow-hidden rounded-2xl bg-white p-8 shadow-2xl dark:border dark:border-zinc-800 dark:bg-black"
-		>
-			<div class="card-content flex flex-col gap-6 md:flex-row md:items-start md:gap-10">
-				<!-- Left: Info -->
-				<div class="flex flex-1 flex-col gap-4">
-					<div class="flex items-center gap-3">
-						<div
-							class="filedrop-icon-wrapper flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-600 text-2xl shadow-lg"
-						>
-							💧
-						</div>
-						<div>
-							<p class="text-xs font-medium tracking-wider text-indigo-600 uppercase">
-								Case Study 02
-							</p>
-							<h2 class="text-2xl font-bold text-black dark:text-white">FileDrop</h2>
-						</div>
-					</div>
-
-					<p class="text-base leading-relaxed text-zinc-500 dark:text-zinc-400">
-						A secure, cross-platform file transfer application designed to make sharing files
-						between devices simple, fast, and privacy-focused using temporary transfer sessions.
-					</p>
-
-					<!-- Tech Tags -->
-					<div class="flex flex-wrap gap-2">
-						{#each filedropTags as tag}
-							<span
-								class="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs font-medium text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
-							>
-								{tag}
-							</span>
-						{/each}
-					</div>
-
-					<!-- CTA -->
-					<div class="mt-2 flex flex-wrap gap-3">
-						<a
-							href="https://filedrop.imanandhu.in"
-							target="_blank"
-							rel="noopener noreferrer"
-							class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:bg-indigo-700 hover:shadow-lg"
-						>
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								width="16"
-								height="16"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							>
-								<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-								<polyline points="15 3 21 3 21 9" />
-								<line x1="10" y1="14" x2="21" y2="3" />
-							</svg>
-							Live Project
-						</a>
-						<span
-							class="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-5 py-2.5 text-sm font-semibold text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
-						>
-							<span class="h-2 w-2 animate-pulse rounded-full bg-indigo-500"></span>
-							Web + Desktop
-						</span>
-					</div>
+					</ul>
 				</div>
 
-				<!-- Right: Minimal visual for FileDrop -->
-				<div class="flex shrink-0 flex-col items-center justify-center gap-4 md:w-64">
-					<div class="filedrop-visual w-full rounded-xl bg-zinc-50 p-5 dark:bg-zinc-900">
-						<p class="mb-3 text-xs font-semibold tracking-widest text-zinc-400 uppercase">
-							Transfer Session
-						</p>
-						<div class="flex flex-col gap-4">
-							<!-- Pair Code Display -->
-							<div
-								class="flex items-center justify-center gap-2 rounded-lg bg-white p-2 text-center font-mono text-sm font-bold tracking-wider text-indigo-600 shadow-sm dark:bg-zinc-800 dark:text-indigo-400"
-							>
-								<span>742</span>
-								<span class="text-zinc-300 dark:text-zinc-600">•</span>
-								<span>981</span>
-							</div>
-
-							<!-- Device-to-Device transfer connection animation -->
-							<div class="flex items-center justify-between gap-2 px-1 py-1">
-								<div class="flex flex-col items-center gap-1">
-									<span class="text-xl">💻</span>
-									<span class="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400"
-										>Desktop</span
-									>
-								</div>
-
-								<div class="relative flex flex-1 items-center justify-center">
-									<!-- Connecting line with moving dots -->
-									<div
-										class="relative h-1 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800"
-									>
-										<div
-											class="transfer-pulse absolute top-0 h-full w-12 bg-gradient-to-r from-transparent via-indigo-500 to-transparent"
-										></div>
+				<div class="col">
+					<span class="label">Platforms</span>
+					<ul class="platforms">
+						{#each p.platforms as pl (pl.name)}
+							<li>
+								{#if pl.href}
+									<a href={pl.href} target="_blank" rel="noopener noreferrer">
+										<span class="pl-name">{pl.name}</span>
+										<span class="pl-detail mono">{pl.detail}</span>
+										<span class="pl-arrow" aria-hidden="true">↗</span>
+									</a>
+								{:else}
+									<div>
+										<span class="pl-name">{pl.name}</span>
+										<span class="pl-detail mono">{pl.detail}</span>
+										{#if pl.badge}<span class="badge mono">{pl.badge}</span>{/if}
 									</div>
-								</div>
-
-								<div class="flex flex-col items-center gap-1">
-									<span class="text-xl">📱</span>
-									<span class="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400"
-										>Mobile</span
-									>
-								</div>
-							</div>
-
-							<!-- File Transfer Status -->
-							<div
-								class="rounded-lg border border-zinc-100 bg-white p-2.5 shadow-sm dark:border-zinc-800 dark:bg-zinc-800"
-							>
-								<div class="flex items-center gap-2">
-									<span class="text-lg">📄</span>
-									<div class="min-w-0 flex-1">
-										<p class="truncate text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-											presentation.pdf
-										</p>
-										<p class="text-[10px] text-zinc-400">4.2 MB / 6.5 MB (65%)</p>
-									</div>
-								</div>
-								<!-- Progress Bar -->
-								<div
-									class="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-700"
-								>
-									<div class="progress-bar-fill h-full rounded-full bg-indigo-600"></div>
-								</div>
-							</div>
-						</div>
-					</div>
-					<p class="text-center text-xs text-zinc-400">Temporary peer transfer mockup</p>
-				</div>
-			</div>
-
-			<!-- Decorative blur blobs -->
-			<div
-				class="pointer-events-none absolute -top-16 -right-16 h-48 w-48 rounded-full bg-indigo-100 opacity-30 blur-3xl dark:bg-indigo-900"
-			></div>
-			<div
-				class="pointer-events-none absolute -bottom-12 -left-12 h-40 w-40 rounded-full bg-indigo-50 opacity-40 blur-2xl dark:bg-indigo-950"
-			></div>
-		</div>
-
-		<!-- Tech Stack + Platforms Row -->
-		<div class="flex flex-col gap-4 md:flex-row">
-			<!-- Tech Stack Card -->
-			<div
-				class="relative flex-1 rounded-2xl bg-white p-6 shadow-xl dark:border dark:border-zinc-800 dark:bg-black"
-			>
-				<div class="card-content">
-					<h3 class="caveat-font mb-5 text-xl font-bold text-black dark:text-white">Tech Stack</h3>
-					<div class="grid grid-cols-2 gap-4">
-						{#each filedropStack as tech}
-							<div class="flex items-center gap-3 rounded-xl bg-zinc-50 p-3 dark:bg-zinc-900">
-								{#if tech.icon}
-									<img
-										src={tech.icon}
-										alt={tech.label}
-										class="h-8 w-8 {tech.invert ? 'dark:invert' : ''}"
-										width="32"
-										height="32"
-										loading="lazy"
-									/>
-								{:else}
-									<span class="text-2xl">{tech.emoji}</span>
 								{/if}
-								<span class="text-sm font-medium text-zinc-700 dark:text-zinc-300"
-									>{tech.label}</span
-								>
-							</div>
+							</li>
 						{/each}
-					</div>
+					</ul>
 				</div>
-			</div>
-
-			<!-- Platforms Card -->
-			<div
-				class="relative flex-1 rounded-2xl bg-white p-6 shadow-xl dark:border dark:border-zinc-800 dark:bg-black"
-			>
-				<div class="card-content">
-					<h3 class="caveat-font mb-5 text-xl font-bold text-black dark:text-white">Platforms</h3>
-					<div class="flex flex-col gap-4">
-						<a
-							href="https://filedrop.imanandhu.in"
-							target="_blank"
-							rel="noopener noreferrer"
-							class="group flex items-center gap-4 rounded-xl border border-zinc-100 bg-zinc-50 p-4 transition-all duration-200 hover:border-indigo-200 hover:bg-indigo-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-indigo-900 dark:hover:bg-zinc-800"
-						>
-							<div
-								class="flex h-10 w-10 items-center justify-center rounded-lg bg-white shadow-sm dark:bg-zinc-800"
-							>
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									width="20"
-									height="20"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									stroke-width="2"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									class="text-indigo-600"
-								>
-									<circle cx="12" cy="12" r="10" />
-									<line x1="2" y1="12" x2="22" y2="12" />
-									<path
-										d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
-									/>
-								</svg>
-							</div>
-							<div class="flex-1">
-								<p class="text-sm font-semibold text-black dark:text-white">Web Client</p>
-								<p class="text-xs text-zinc-400">filedrop.imanandhu.in</p>
-							</div>
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								width="16"
-								height="16"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								class="text-zinc-300 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-indigo-500"
-							>
-								<polyline points="9 18 15 12 9 6" />
-							</svg>
-						</a>
-
-						<div
-							class="flex items-center gap-4 rounded-xl border border-zinc-100 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-900"
-						>
-							<div
-								class="flex h-10 w-10 items-center justify-center rounded-lg bg-white shadow-sm dark:bg-zinc-800"
-							>
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									width="20"
-									height="20"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									stroke-width="2"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									class="text-indigo-600"
-								>
-									<rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
-									<line x1="8" y1="21" x2="16" y2="21" />
-									<line x1="12" y1="17" x2="12" y2="21" />
-								</svg>
-							</div>
-							<div class="flex-1">
-								<p class="text-sm font-semibold text-black dark:text-white">Desktop Client</p>
-								<p class="text-xs text-zinc-400">Wails · Go + Web</p>
-							</div>
-							<span
-								class="rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400"
-								>Wails</span
-							>
-						</div>
-					</div>
-				</div>
-			</div>
-
-			<!-- Problem / Solution Card -->
-			<div
-				class="relative flex-1 rounded-2xl bg-white p-6 shadow-xl dark:border dark:border-zinc-800 dark:bg-black"
-			>
-				<div class="card-content">
-					<h3 class="caveat-font mb-5 text-xl font-bold text-black dark:text-white">The Problem</h3>
-					<p class="text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
-						Traditional file sharing options often require setting up accounts, paying for cloud
-						storage, or dealing with complex device-specific configurations (like AirDrop or Nearby
-						Share). This creates friction when sharing files across different platforms.
-					</p>
-					<div class="mt-4 border-t border-zinc-100 pt-4 dark:border-zinc-800">
-						<h3 class="caveat-font mb-2 text-xl font-bold text-black dark:text-white">
-							The Solution
-						</h3>
-						<p class="text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
-							FileDrop provides a frictionless, web-based experience. By using short pairing codes
-							and signed Cloudflare R2 URLs, users can upload files and retrieve them on any
-							platform without an account, with automatic object cleanup post-transfer.
-						</p>
-					</div>
-				</div>
-			</div>
+			</section>
 		</div>
+	</article>
+{/each}
+
+<!-- More coming -->
+<section class="more" use:reveal>
+	<div class="more-inner">
+		<span class="label">Next</span>
+		<p class="display fluid-md">More case studies coming soon</p>
+		<span class="label">Each project tells a different story — stay tuned.</span>
 	</div>
-
-	<!-- SysInfo Pro Case Study -->
-	<div class="flex flex-col gap-4">
-		<!-- Project Hero Card -->
-		<div
-			class="sysinfopro-hero relative overflow-hidden rounded-2xl bg-white p-8 shadow-2xl dark:border dark:border-zinc-800 dark:bg-black"
-		>
-			<div class="card-content flex flex-col gap-6 md:flex-row md:items-start md:gap-10">
-				<!-- Left: Info -->
-				<div class="flex flex-1 flex-col gap-4">
-					<div class="flex items-center gap-3">
-						<div
-							class="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-600 text-2xl shadow-lg"
-						>
-							🖥️
-						</div>
-						<div>
-							<p class="text-xs font-medium tracking-wider text-emerald-600 uppercase">
-								Case Study 03
-							</p>
-							<h2 class="text-2xl font-bold text-black dark:text-white">SysInfo Pro</h2>
-						</div>
-					</div>
-
-					<p class="text-base leading-relaxed text-zinc-500 dark:text-zinc-400">
-						System Telemetry Redefined with Elegance. An ultra-clean, information-dense desktop
-						utility for Windows — real-time RAM forecasting, multi-stream speed testing, spec card
-						export, and deep battery analytics. Zero install required.
-					</p>
-
-					<!-- Tech Tags -->
-					<div class="flex flex-wrap gap-2">
-						{#each sysinfoproTags as tag}
-							<span
-								class="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs font-medium text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
-							>
-								{tag}
-							</span>
-						{/each}
-					</div>
-
-					<!-- CTA -->
-					<div class="mt-2 flex flex-wrap gap-3">
-						<a
-							href="https://sysinfopro.imanandhu.in"
-							target="_blank"
-							rel="noopener noreferrer"
-							class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:bg-emerald-700 hover:shadow-lg"
-						>
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								width="16"
-								height="16"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							>
-								<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-								<polyline points="15 3 21 3 21 9" />
-								<line x1="10" y1="14" x2="21" y2="3" />
-							</svg>
-							Visit Site
-						</a>
-						<span
-							class="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-5 py-2.5 text-sm font-semibold text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
-						>
-							<span class="h-2 w-2 animate-pulse rounded-full bg-emerald-500"></span>
-							Windows Desktop
-						</span>
-					</div>
-				</div>
-
-				<!-- Right: System metrics mini-UI -->
-				<div class="flex shrink-0 flex-col items-center justify-center gap-4 md:w-64">
-					<div class="sysinfo-visual w-full rounded-xl bg-zinc-900 p-4">
-						<p class="mb-3 text-xs font-semibold tracking-widest text-zinc-500 uppercase">
-							Live Telemetry
-						</p>
-						<div class="flex flex-col gap-3">
-							<!-- CPU -->
-							<div>
-								<div class="mb-1 flex items-center justify-between">
-									<span class="text-xs font-medium text-zinc-400">CPU</span>
-									<span class="cpu-val text-xs font-semibold text-emerald-400">34%</span>
-								</div>
-								<div class="h-1.5 w-full overflow-hidden rounded-full bg-zinc-800">
-									<div class="cpu-bar h-full rounded-full bg-emerald-500"></div>
-								</div>
-							</div>
-							<!-- RAM -->
-							<div>
-								<div class="mb-1 flex items-center justify-between">
-									<span class="text-xs font-medium text-zinc-400">RAM</span>
-									<span class="text-xs font-semibold text-sky-400">9.2 GB</span>
-								</div>
-								<div class="h-1.5 w-full overflow-hidden rounded-full bg-zinc-800">
-									<div class="ram-bar h-full rounded-full bg-sky-500"></div>
-								</div>
-							</div>
-							<!-- Disk -->
-							<div>
-								<div class="mb-1 flex items-center justify-between">
-									<span class="text-xs font-medium text-zinc-400">Disk</span>
-									<span class="text-xs font-semibold text-violet-400">412 GB</span>
-								</div>
-								<div class="h-1.5 w-full overflow-hidden rounded-full bg-zinc-800">
-									<div class="disk-bar h-full rounded-full bg-violet-500"></div>
-								</div>
-							</div>
-							<!-- Network -->
-							<div class="mt-1 flex items-center justify-between rounded-lg bg-zinc-800 px-3 py-2">
-								<div class="flex items-center gap-1.5">
-									<span class="text-xs text-zinc-500">↓</span>
-									<span class="text-xs font-semibold text-emerald-400">112 Mbps</span>
-								</div>
-								<div class="flex items-center gap-1.5">
-									<span class="text-xs text-zinc-500">↑</span>
-									<span class="text-xs font-semibold text-orange-400">24 Mbps</span>
-								</div>
-							</div>
-						</div>
-					</div>
-					<p class="text-center text-xs text-zinc-400">Real-time system telemetry view</p>
-				</div>
-			</div>
-
-			<!-- Decorative blur blobs -->
-			<div
-				class="pointer-events-none absolute -top-16 -right-16 h-48 w-48 rounded-full bg-emerald-100 opacity-30 blur-3xl dark:bg-emerald-900"
-			></div>
-			<div
-				class="pointer-events-none absolute -bottom-12 -left-12 h-40 w-40 rounded-full bg-emerald-50 opacity-40 blur-2xl dark:bg-emerald-950"
-			></div>
-		</div>
-
-		<!-- Tech Stack + Platforms Row -->
-		<div class="flex flex-col gap-4 md:flex-row">
-			<!-- Tech Stack Card -->
-			<div
-				class="relative flex-1 rounded-2xl bg-white p-6 shadow-xl dark:border dark:border-zinc-800 dark:bg-black"
-			>
-				<div class="card-content">
-					<h3 class="caveat-font mb-5 text-xl font-bold text-black dark:text-white">Tech Stack</h3>
-					<div class="grid grid-cols-2 gap-4">
-						{#each sysinfoproStack as tech}
-							<div class="flex items-center gap-3 rounded-xl bg-zinc-50 p-3 dark:bg-zinc-900">
-								{#if tech.icon}
-									<img
-										src={tech.icon}
-										alt={tech.label}
-										class="h-8 w-8 {tech.invert ? 'dark:invert' : ''}"
-										width="32"
-										height="32"
-										loading="lazy"
-									/>
-								{:else}
-									<span class="text-2xl">{tech.emoji}</span>
-								{/if}
-								<span class="text-sm font-medium text-zinc-700 dark:text-zinc-300"
-									>{tech.label}</span
-								>
-							</div>
-						{/each}
-					</div>
-				</div>
-			</div>
-
-			<!-- Platforms Card -->
-			<div
-				class="relative flex-1 rounded-2xl bg-white p-6 shadow-xl dark:border dark:border-zinc-800 dark:bg-black"
-			>
-				<div class="card-content">
-					<h3 class="caveat-font mb-5 text-xl font-bold text-black dark:text-white">Platforms</h3>
-					<div class="flex flex-col gap-4">
-						<a
-							href="https://sysinfopro.imanandhu.in"
-							target="_blank"
-							rel="noopener noreferrer"
-							class="group flex items-center gap-4 rounded-xl border border-zinc-100 bg-zinc-50 p-4 transition-all duration-200 hover:border-emerald-200 hover:bg-emerald-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-emerald-900 dark:hover:bg-zinc-800"
-						>
-							<div
-								class="flex h-10 w-10 items-center justify-center rounded-lg bg-white shadow-sm dark:bg-zinc-800"
-							>
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									width="20"
-									height="20"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									stroke-width="2"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									class="text-emerald-600"
-								>
-									<circle cx="12" cy="12" r="10" />
-									<line x1="2" y1="12" x2="22" y2="12" />
-									<path
-										d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
-									/>
-								</svg>
-							</div>
-							<div class="flex-1">
-								<p class="text-sm font-semibold text-black dark:text-white">Landing Page</p>
-								<p class="text-xs text-zinc-400">sysinfopro.imanandhu.in</p>
-							</div>
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								width="16"
-								height="16"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								class="text-zinc-300 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-emerald-500"
-							>
-								<polyline points="9 18 15 12 9 6" />
-							</svg>
-						</a>
-
-						<div
-							class="flex items-center gap-4 rounded-xl border border-zinc-100 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-900"
-						>
-							<div
-								class="flex h-10 w-10 items-center justify-center rounded-lg bg-white shadow-sm dark:bg-zinc-800"
-							>
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									width="20"
-									height="20"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									stroke-width="2"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									class="text-emerald-600"
-								>
-									<rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
-									<line x1="8" y1="21" x2="16" y2="21" />
-									<line x1="12" y1="17" x2="12" y2="21" />
-								</svg>
-							</div>
-							<div class="flex-1">
-								<p class="text-sm font-semibold text-black dark:text-white">Windows Desktop App</p>
-								<p class="text-xs text-zinc-400">Wails · Go + Svelte · Single .exe</p>
-							</div>
-							<span
-								class="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
-								>v2.0</span
-							>
-						</div>
-					</div>
-				</div>
-			</div>
-
-			<!-- Problem / Solution Card -->
-			<div
-				class="relative flex-1 rounded-2xl bg-white p-6 shadow-xl dark:border dark:border-zinc-800 dark:bg-black"
-			>
-				<div class="card-content">
-					<h3 class="caveat-font mb-5 text-xl font-bold text-black dark:text-white">The Problem</h3>
-					<p class="text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
-						Existing system monitors are either too bloated, require installation and background
-						services, or surface raw numbers without any predictive insight — leaving developers and
-						power users reacting to problems instead of preventing them.
-					</p>
-					<div class="mt-4 border-t border-zinc-100 pt-4 dark:border-zinc-800">
-						<h3 class="caveat-font mb-2 text-xl font-bold text-black dark:text-white">
-							The Solution
-						</h3>
-						<p class="text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
-							SysInfo Pro ships as a single portable .exe — no install, no bloat, no background
-							services. Built with Go + Wails for native performance and Svelte for a clean UI, it
-							turns raw hardware data into actionable intelligence.
-						</p>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-
-	<!-- More coming soon -->
-	<div
-		class="relative flex flex-col items-center gap-2 rounded-2xl border border-dashed border-zinc-200 p-8 dark:border-zinc-800"
-	>
-		<p class="caveat-font text-2xl font-bold text-zinc-300 dark:text-zinc-700">
-			More case studies coming soon
-		</p>
-		<p class="text-sm text-zinc-400">Each project tells a different story — stay tuned.</p>
-	</div>
+	<a class="ghost-btn" href="/contact" use:magnetic={{ strength: 0.22 }}>
+		Start a conversation
+		<span aria-hidden="true">→</span>
+	</a>
 </section>
 
 <style>
-	.bus-position {
-		animation: pulse-glow 2s infinite;
+	.page-head {
+		display: flex;
+		flex-direction: column;
+		gap: 1.25rem;
+		padding: calc(var(--nav-h) + 6rem) var(--gutter) 3rem;
 	}
 
-	@keyframes pulse-glow {
-		0%,
-		100% {
-			box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
-		}
-		50% {
-			box-shadow: 0 0 0 6px rgba(34, 197, 94, 0);
-		}
+	.page-head h1 {
+		margin: 0;
 	}
 
-	.case-study-hero {
-		background-image: radial-gradient(
-			ellipse at top right,
-			rgba(219, 234, 254, 0.3) 0%,
-			transparent 60%
-		);
+	.page-head p {
+		max-width: 34rem;
+		margin: 0;
+		font-size: 1rem;
+		line-height: 1.7;
+		color: #94949e;
 	}
 
-	:global(.dark) .case-study-hero {
-		background-image: radial-gradient(
-			ellipse at top right,
-			rgba(30, 58, 138, 0.15) 0%,
-			transparent 60%
-		);
+	.head-rule {
+		height: 1px;
+		background: var(--line);
+		margin-top: 1.5rem;
 	}
 
-	.transfer-pulse {
-		animation: pulse-move 2.5s infinite linear;
+	/* ---------------------------------------------------------- STUDY */
+	.study {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: 2.5rem;
+		padding: 4rem var(--gutter);
+		border-bottom: 1px solid var(--line);
+		scroll-margin-top: var(--nav-h);
 	}
 
-	@keyframes pulse-move {
-		0% {
-			left: -40%;
-		}
-		100% {
-			left: 140%;
-		}
-	}
-
-	.progress-bar-fill {
-		animation: fill-progress 5s infinite ease-in-out;
-	}
-
-	@keyframes fill-progress {
-		0% {
-			width: 0%;
-		}
-		10% {
-			width: 15%;
-		}
-		40% {
-			width: 65%;
-		}
-		75%,
-		100% {
-			width: 100%;
+	@media (min-width: 1000px) {
+		.study {
+			grid-template-columns: minmax(0, 16rem) minmax(0, 1fr);
+			gap: 4rem;
+			padding: 6.5rem var(--gutter);
 		}
 	}
 
-	.filedrop-hero {
-		background-image: radial-gradient(
-			ellipse at top right,
-			rgba(224, 231, 255, 0.3) 0%,
-			transparent 60%
-		);
+	.rail {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+		align-items: flex-start;
 	}
 
-	:global(.dark) .filedrop-hero {
-		background-image: radial-gradient(
-			ellipse at top right,
-			rgba(49, 46, 129, 0.15) 0%,
-			transparent 60%
-		);
-	}
-
-	.sysinfopro-hero {
-		background-image: radial-gradient(
-			ellipse at top right,
-			rgba(209, 250, 229, 0.3) 0%,
-			transparent 60%
-		);
-	}
-
-	:global(.dark) .sysinfopro-hero {
-		background-image: radial-gradient(
-			ellipse at top right,
-			rgba(6, 78, 59, 0.15) 0%,
-			transparent 60%
-		);
-	}
-
-	.cpu-bar {
-		width: 34%;
-		animation: cpu-flicker 3s infinite ease-in-out;
-	}
-
-	@keyframes cpu-flicker {
-		0%,
-		100% {
-			width: 34%;
-		}
-		30% {
-			width: 52%;
-		}
-		60% {
-			width: 28%;
-		}
-		80% {
-			width: 61%;
+	@media (min-width: 1000px) {
+		.rail {
+			position: sticky;
+			top: calc(var(--nav-h) + 3rem);
+			align-self: start;
 		}
 	}
 
-	.ram-bar {
-		width: 58%;
-		animation: ram-creep 8s infinite ease-in-out;
+	.rail-n {
+		font-size: 0.6875rem;
+		color: var(--accent);
+		letter-spacing: 0.18em;
 	}
 
-	@keyframes ram-creep {
-		0% {
-			width: 58%;
-		}
-		50% {
-			width: 65%;
-		}
-		100% {
-			width: 58%;
+	.rail-name {
+		margin: 0;
+		font-size: clamp(2rem, 5vw, 3rem);
+	}
+
+	.rail-line {
+		width: 3rem;
+		height: 1px;
+		background: var(--accent);
+		margin: 0.5rem 0;
+	}
+
+	.status {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.pip {
+		width: 5px;
+		height: 5px;
+		border-radius: 999px;
+		background: var(--accent);
+	}
+
+	/* ---------------------------------------------------------- DETAIL */
+	.detail {
+		display: flex;
+		flex-direction: column;
+		gap: 3.5rem;
+		min-width: 0;
+	}
+
+	.block {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 1.75rem;
+	}
+
+	.summary {
+		margin: 0;
+		max-width: 46rem;
+		font-size: clamp(1.0625rem, 2vw, 1.25rem);
+		line-height: 1.6;
+		color: #f0f0f2;
+	}
+
+	.tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+	}
+
+	.tags li {
+		font-size: 0.625rem;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		padding: 0.35rem 0.7rem;
+		border: 1px solid var(--line);
+		color: #94949e;
+		transition:
+			border-color 0.4s ease,
+			color 0.4s ease;
+	}
+
+	.tags li:hover {
+		border-color: var(--accent);
+		color: var(--accent);
+	}
+
+	.live {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.6rem;
+		padding: 0.85rem 1.4rem;
+		font-family: 'JetBrains Mono Variable', monospace;
+		font-size: 0.6875rem;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		text-decoration: none;
+		color: #050506;
+		background: var(--accent);
+		transition: box-shadow 0.45s ease;
+	}
+
+	.live:hover {
+		box-shadow: 0 0 30px color-mix(in srgb, var(--accent) 45%, transparent);
+	}
+
+	.ctas {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+	}
+
+	.source {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.6rem;
+		padding: 0.85rem 1.4rem;
+		border: 1px solid rgba(255, 255, 255, 0.16);
+		font-family: 'JetBrains Mono Variable', monospace;
+		font-size: 0.6875rem;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		text-decoration: none;
+		color: #f0f0f2;
+		transition:
+			border-color 0.4s ease,
+			color 0.4s ease;
+	}
+
+	.source:hover {
+		border-color: var(--accent);
+		color: var(--accent);
+	}
+
+	.split {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: 2.5rem;
+	}
+
+	@media (min-width: 720px) {
+		.split {
+			grid-template-columns: minmax(0, 1fr) minmax(0, 18rem);
+			gap: 3rem;
+			align-items: start;
 		}
 	}
 
-	.disk-bar {
-		width: 41%;
+	.prose {
+		display: flex;
+		flex-direction: column;
+		gap: 2rem;
+	}
+
+	.qa {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+		padding-left: 1.25rem;
+		border-left: 1px solid var(--line);
+	}
+
+	.qa p {
+		margin: 0;
+		font-size: 0.9375rem;
+		line-height: 1.75;
+		color: #94949e;
+	}
+
+	.col {
+		display: flex;
+		flex-direction: column;
+		gap: 1.25rem;
+		min-width: 0;
+	}
+
+	.stack {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+		gap: 1px;
+		background: var(--line);
+		border: 1px solid var(--line);
+	}
+
+	.stack li {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		padding: 0.9rem 1rem;
+		background: #050506;
+		font-size: 0.8125rem;
+		transition: background 0.4s ease;
+	}
+
+	.stack li:hover {
+		background: rgba(255, 255, 255, 0.03);
+	}
+
+	.stack img {
+		width: 1.35rem;
+		height: 1.35rem;
+		object-fit: contain;
+	}
+
+	.stack img.invert {
+		filter: invert(1);
+	}
+
+	.glyph {
+		display: grid;
+		place-items: center;
+		width: 1.35rem;
+		height: 1.35rem;
+		color: var(--accent);
+		font-size: 0.8rem;
+	}
+
+	.platforms {
+		display: flex;
+		flex-direction: column;
+		gap: 1px;
+		background: var(--line);
+		border: 1px solid var(--line);
+	}
+
+	.platforms li > * {
+		display: grid;
+		grid-template-columns: 1fr auto;
+		gap: 0.2rem 0.75rem;
+		padding: 1rem;
+		background: #050506;
+		text-decoration: none;
+		color: inherit;
+		transition: background 0.4s ease;
+	}
+
+	.platforms a:hover {
+		background: rgba(255, 255, 255, 0.03);
+	}
+
+	.pl-name {
+		font-size: 0.875rem;
+	}
+
+	.pl-detail {
+		grid-column: 1;
+		font-size: 0.625rem;
+		color: #55555f;
+	}
+
+	.pl-arrow,
+	.badge {
+		grid-row: 1;
+		grid-column: 2;
+		align-self: center;
+	}
+
+	.pl-arrow {
+		color: #55555f;
+		transition:
+			transform 0.45s var(--ease-out-expo),
+			color 0.4s ease;
+	}
+
+	.platforms a:hover .pl-arrow {
+		color: var(--accent);
+		transform: translate(3px, -3px);
+	}
+
+	.badge {
+		font-size: 0.5625rem;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		padding: 0.25rem 0.5rem;
+		border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+		color: var(--accent);
+	}
+
+	/* ---------------------------------------------------------- MORE */
+	.more {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 2.5rem;
+		padding: 7rem var(--gutter);
+		text-align: center;
+	}
+
+	.more-inner {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+		align-items: center;
+	}
+
+	.more-inner p {
+		margin: 0;
+		color: #55555f;
+	}
+
+	.ghost-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.75rem;
+		padding: 0.9rem 1.5rem;
+		border: 1px solid rgba(255, 255, 255, 0.16);
+		font-family: 'JetBrains Mono Variable', monospace;
+		font-size: 0.6875rem;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+		text-decoration: none;
+		color: #f0f0f2;
+		transition:
+			background 0.45s var(--ease-out-expo),
+			color 0.45s var(--ease-out-expo),
+			border-color 0.45s ease;
+	}
+
+	.ghost-btn:hover {
+		background: #2bf5c0;
+		border-color: #2bf5c0;
+		color: #050506;
 	}
 </style>

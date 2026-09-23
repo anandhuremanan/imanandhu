@@ -1,52 +1,82 @@
 <script lang="ts">
 	import './layout.css';
-	import '@fontsource-variable/caveat';
-	import '@fontsource-variable/outfit';
+	import '@fontsource-variable/geist';
+	import '@fontsource-variable/jetbrains-mono';
+
+	import { page } from '$app/state';
+	import Backdrop from '$lib/components/Backdrop.svelte';
+	import Preloader from '$lib/components/Preloader.svelte';
+	import Cursor from '$lib/components/Cursor.svelte';
+	import Nav from '$lib/components/Nav.svelte';
+	import Footer from '$lib/components/Footer.svelte';
 
 	let { children } = $props();
 </script>
 
 <svelte:head>
-	<title>Anandhu O R | Software Engineer</title>
+	<title>Anandhu Remanan — Software Engineer</title>
 	<meta
 		name="description"
-		content="Software Engineer focused on clean UI, scalable systems, and thoughtful digital experiences."
+		content="Software Engineer from Kerala, India. Clean UI, scalable systems, and thoughtful digital experiences."
 	/>
+	<meta name="theme-color" content="#050506" />
 	<link rel="icon" href="/favicon.ico" />
 
-	<!-- Open Graph -->
 	<meta property="og:type" content="website" />
-	<meta property="og:title" content="Anandhu O R | Software Engineer" />
+	<meta property="og:title" content="Anandhu Remanan — Software Engineer" />
 	<meta
 		property="og:description"
-		content="Software Engineer focused on clean UI, scalable systems, and thoughtful digital experiences."
+		content="Software Engineer from Kerala, India. Clean UI, scalable systems, and thoughtful digital experiences."
 	/>
 	<meta property="og:url" content="https://imanandhu.in" />
+	<meta property="og:image" content="https://imanandhu.in/hero.webp" />
 
-	<!-- Twitter -->
 	<meta name="twitter:card" content="summary_large_image" />
-	<meta name="twitter:title" content="Anandhu O R | Software Engineer" />
+	<meta name="twitter:title" content="Anandhu Remanan — Software Engineer" />
 	<meta
 		name="twitter:description"
-		content="Software Engineer focused on clean UI, scalable systems, and thoughtful digital experiences."
+		content="Software Engineer from Kerala, India. Clean UI, scalable systems, and thoughtful digital experiences."
 	/>
+	<meta name="twitter:image" content="https://imanandhu.in/hero.webp" />
 </svelte:head>
 
-<nav class="outfit-font mt-4 flex w-full items-center justify-center text-xs md:text-base">
-	<ul
-		class="flex space-x-8 rounded-full bg-white px-6 py-3 shadow-2xl dark:border dark:border-zinc-800 dark:bg-black dark:text-white"
-	>
-		<li><a href="/" class="hover:text-blue-700">Home</a></li>
-		<li><a href="/case-studies" class="hover:text-blue-700">Case Studies</a></li>
-		<li><a href="/contact" class="hover:text-blue-700">Contact</a></li>
-		<li>
-			<a href="/" class="rounded-2xl border border-blue-700 px-2 py-1 text-blue-700">Resume</a>
-		</li>
-	</ul>
-</nav>
+<Preloader />
+<Backdrop />
+<Cursor />
 
-<main
-	class="outfit-font flex flex-col items-center bg-radial-[at_50%_45%] from-blue-100 to-transparent to-60% dark:from-blue-900"
->
-	{@render children()}
-</main>
+<div class="grid-overlay"></div>
+<div class="vignette"></div>
+<div class="grain-overlay"></div>
+
+<Nav />
+
+<!-- Keyed on the route so each page replays its entrance. -->
+{#key page.url.pathname}
+	<main class="shell">
+		{@render children()}
+	</main>
+{/key}
+
+<Footer />
+
+<style>
+	.shell {
+		position: relative;
+		z-index: 10;
+		min-height: 100vh;
+		animation: routeIn 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
+	}
+
+	@keyframes routeIn {
+		from {
+			opacity: 0;
+			transform: translateY(14px);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.shell {
+			animation: none;
+		}
+	}
+</style>

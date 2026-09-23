@@ -1,166 +1,383 @@
 <script lang="ts">
-	import { fly } from 'svelte/transition';
+	import { reveal, magnetic, scramble } from '$lib/actions';
+	import { socials } from '$lib/data/projects';
 
-	const iconStyle =
-		'p-1 delay-150 duration-300 ease-in-out hover:-translate-y-1 hover:scale-110 hover:cursor-pointer hover:transition';
+	let sending = $state(false);
 </script>
 
 <svelte:head>
-	<title>Contact | Anandhu Remanan</title>
+	<title>Contact — Anandhu Remanan</title>
 	<meta
 		name="description"
-		content="Get in touch with Anandhu Remanan. Connect via Social Media or send a message."
+		content="Get in touch with Anandhu Remanan. Connect via social media or send a message."
 	/>
-	<meta property="og:title" content="Contact | Anandhu Remanan" />
+	<meta property="og:title" content="Contact — Anandhu Remanan" />
 	<meta
 		property="og:description"
-		content="Get in touch with Anandhu Remanan. Connect via Social Media or send a message."
+		content="Get in touch with Anandhu Remanan. Connect via social media or send a message."
 	/>
 </svelte:head>
 
-<section
-	in:fly={{ y: 20, duration: 600 }}
-	class="flex w-full flex-col gap-4 p-4 md:p-8 lg:px-12 xl:px-32"
->
-	<div class="flex flex-col gap-4">
-		<!-- Header Card -->
-		<div
-			class="relative flex flex-col items-center gap-4 rounded-2xl bg-white p-6 shadow-2xl dark:border dark:border-zinc-800 dark:bg-black"
-		>
-			<h1 class="caveat-font text-3xl font-bold text-black dark:text-white">Let's Connect</h1>
-			<p class="max-w-lg text-center text-zinc-600 dark:text-zinc-400">
-				I'm always open to discussing new projects, creative ideas, or opportunities to be part of
-				your visions. Feel free to reach out!
+<header class="page-head">
+	<span class="label label-accent">[ 003 / CONTACT ]</span>
+	<h1 class="display fluid-lg" use:scramble={{ trigger: 'mount' }}>Let's Connect</h1>
+	<p>
+		I'm always open to discussing new projects, creative ideas, or opportunities to be part of your
+		visions. Feel free to reach out!
+	</p>
+	<div class="head-rule" use:reveal={{ rule: true, delay: 200 }}></div>
+</header>
+
+<div class="grid">
+	<!-- Left: channels -->
+	<aside class="channels">
+		<div class="block" use:reveal>
+			<span class="label">Status</span>
+			<p class="status">
+				<i class="pip"></i>
+				Open to work
 			</p>
+			<span class="label">Kerala, India · Remote friendly</span>
 		</div>
 
-		<div class="flex flex-col gap-4 md:flex-row">
-			<!-- Social Links Card -->
-			<div
-				class="relative flex-1 rounded-2xl bg-white p-8 shadow-xl dark:border dark:border-zinc-800 dark:bg-black"
-			>
-				<div class="card-content flex flex-col items-center gap-6">
-					<h2 class="caveat-font text-2xl font-bold text-black dark:text-white">Socials</h2>
-					<div class="grid grid-cols-2 gap-8">
-						<a
-							href="https://www.linkedin.com/in/anandhuremanan/"
-							target="_blank"
-							aria-label="LinkedIn Profile"
-							class="group flex flex-col items-center gap-2"
-						>
-							<div
-								class="rounded-full bg-blue-50 p-4 transition-colors group-hover:bg-blue-100 dark:bg-zinc-900"
-							>
-								<!-- LinkedIn Icon (Simple SVG fallback since we rely on external images usually) -->
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									width="32"
-									height="32"
-									viewBox="0 0 24 24"
-									fill="currentColor"
-									class="text-blue-600"
-								>
-									<path
-										d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"
-									/>
-								</svg>
-							</div>
-							<span class="text-sm font-medium text-zinc-600 dark:text-zinc-400">LinkedIn</span>
+		<div class="block" use:reveal={{ delay: 80 }}>
+			<span class="label">Channels</span>
+			<ul class="socials">
+				{#each socials as s (s.href)}
+					<li>
+						<a href={s.href} target="_blank" rel="noopener noreferrer">
+							<span>{s.label}</span>
+							<span class="handle mono">{s.handle}</span>
+							<span class="arrow" aria-hidden="true">↗</span>
 						</a>
-
-						<a
-							href="https://twitter.com/anandhu_or"
-							target="_blank"
-							aria-label="Twitter Profile"
-							class="group flex flex-col items-center gap-2"
-						>
-							<div
-								class="rounded-full bg-blue-50 p-4 transition-colors group-hover:bg-blue-100 dark:bg-zinc-900"
-							>
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									width="32"
-									height="32"
-									viewBox="0 0 24 24"
-									fill="currentColor"
-									class="text-black dark:text-white"
-								>
-									<path
-										d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"
-									/>
-								</svg>
-							</div>
-							<span class="text-sm font-medium text-zinc-600 dark:text-zinc-400">Twitter</span>
-						</a>
-					</div>
-				</div>
-			</div>
-
-			<!-- Contact Form Card -->
-			<div
-				class="relative flex-1 rounded-2xl bg-white p-6 shadow-xl dark:border dark:border-zinc-800 dark:bg-black"
-			>
-				<div class="card-content">
-					<h2 class="caveat-font mb-4 text-center text-2xl font-bold text-black dark:text-white">
-						Send a Message
-					</h2>
-
-					<!-- Formspree Placeholder Action -->
-					<form action="https://formspree.io/f/xbddkkjy" method="POST" class="flex flex-col gap-4">
-						<div class="flex flex-col gap-1">
-							<label for="name" class="text-sm font-medium text-zinc-600 dark:text-zinc-400"
-								>Name</label
-							>
-							<input
-								type="text"
-								name="name"
-								id="name"
-								required
-								placeholder="Your name"
-								class="rounded-lg border border-zinc-200 bg-zinc-50 p-3 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white"
-							/>
-						</div>
-
-						<div class="flex flex-col gap-1">
-							<label for="email" class="text-sm font-medium text-zinc-600 dark:text-zinc-400"
-								>Email</label
-							>
-							<input
-								type="email"
-								name="email"
-								id="email"
-								required
-								placeholder="name@example.com"
-								class="rounded-lg border border-zinc-200 bg-zinc-50 p-3 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white"
-							/>
-						</div>
-
-						<div class="flex flex-col gap-1">
-							<label for="message" class="text-sm font-medium text-zinc-600 dark:text-zinc-400"
-								>Message</label
-							>
-							<textarea
-								name="message"
-								id="message"
-								rows="4"
-								required
-								placeholder="Whatever you want to say..."
-								class="rounded-lg border border-zinc-200 bg-zinc-50 p-3 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white"
-							></textarea>
-						</div>
-
-						<button
-							type="submit"
-							class="mt-2 rounded-lg bg-black px-4 py-3 text-sm font-bold text-white transition-transform hover:scale-[1.02] active:scale-[0.98] dark:bg-white dark:text-black"
-						>
-							Send Message
-						</button>
-						<p class="mt-2 text-center text-xs text-zinc-400">
-							Powered by Formspree. No email revealed.
-						</p>
-					</form>
-				</div>
-			</div>
+					</li>
+				{/each}
+			</ul>
 		</div>
-	</div>
-</section>
+
+		<div class="block" use:reveal={{ delay: 160 }}>
+			<span class="label">Response time</span>
+			<p class="dim">Usually within a day or two.</p>
+		</div>
+	</aside>
+
+	<!-- Right: form -->
+	<section class="form-wrap" use:reveal={{ delay: 120 }}>
+		<div class="form-head">
+			<span class="label">Send a message</span>
+			<span class="label mono">01 — 03</span>
+		</div>
+
+		<form
+			action="https://formspree.io/f/xbddkkjy"
+			method="POST"
+			class="form"
+			onsubmit={() => (sending = true)}
+		>
+			<div class="field">
+				<label for="name" class="label">01 — Name</label>
+				<input type="text" name="name" id="name" required placeholder="Your name" />
+			</div>
+
+			<div class="field">
+				<label for="email" class="label">02 — Email</label>
+				<input type="email" name="email" id="email" required placeholder="name@example.com" />
+			</div>
+
+			<div class="field">
+				<label for="message" class="label">03 — Message</label>
+				<textarea
+					name="message"
+					id="message"
+					rows="6"
+					required
+					placeholder="Whatever you want to say..."
+				></textarea>
+			</div>
+
+			<button type="submit" disabled={sending} use:magnetic={{ strength: 0.18 }}>
+				{sending ? 'Sending…' : 'Transmit'}
+				<span aria-hidden="true">→</span>
+			</button>
+
+			<p class="label foot">Powered by Formspree · No email revealed</p>
+		</form>
+	</section>
+</div>
+
+<style>
+	.page-head {
+		display: flex;
+		flex-direction: column;
+		gap: 1.25rem;
+		padding: calc(var(--nav-h) + 6rem) var(--gutter) 3rem;
+	}
+
+	.page-head h1 {
+		margin: 0;
+	}
+
+	.page-head p {
+		max-width: 34rem;
+		margin: 0;
+		font-size: 1rem;
+		line-height: 1.7;
+		color: #94949e;
+	}
+
+	.head-rule {
+		height: 1px;
+		background: var(--line);
+		margin-top: 1.5rem;
+	}
+
+	.grid {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: 3.5rem;
+		padding: 2rem var(--gutter) 7rem;
+	}
+
+	@media (min-width: 900px) {
+		.grid {
+			grid-template-columns: minmax(0, 20rem) minmax(0, 1fr);
+			gap: 4.5rem;
+			align-items: start;
+		}
+	}
+
+	/* ---------------------------------------------------------- CHANNELS */
+	.channels {
+		display: flex;
+		flex-direction: column;
+		gap: 2.5rem;
+	}
+
+	@media (min-width: 900px) {
+		.channels {
+			position: sticky;
+			top: calc(var(--nav-h) + 3rem);
+		}
+	}
+
+	.block {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	.status {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		margin: 0;
+		font-size: 1.125rem;
+		color: #2bf5c0;
+	}
+
+	.pip {
+		width: 6px;
+		height: 6px;
+		border-radius: 999px;
+		background: #2bf5c0;
+		box-shadow: 0 0 0 0 rgba(43, 245, 192, 0.55);
+		animation: ping 2.4s ease-out infinite;
+	}
+
+	@keyframes ping {
+		0% {
+			box-shadow: 0 0 0 0 rgba(43, 245, 192, 0.55);
+		}
+		70%,
+		100% {
+			box-shadow: 0 0 0 8px rgba(43, 245, 192, 0);
+		}
+	}
+
+	.dim {
+		margin: 0;
+		font-size: 0.9375rem;
+		color: #94949e;
+	}
+
+	.socials {
+		border-top: 1px solid var(--line);
+	}
+
+	.socials a {
+		display: grid;
+		grid-template-columns: 1fr auto;
+		gap: 0.2rem 0.75rem;
+		padding: 0.85rem 0;
+		border-bottom: 1px solid var(--line);
+		text-decoration: none;
+		color: #f0f0f2;
+		font-size: 0.9375rem;
+		transition:
+			color 0.35s ease,
+			padding-left 0.45s var(--ease-out-expo);
+	}
+
+	.socials a:hover {
+		color: #2bf5c0;
+		padding-left: 0.5rem;
+	}
+
+	.handle {
+		grid-column: 1;
+		font-size: 0.625rem;
+		color: #55555f;
+	}
+
+	.arrow {
+		grid-row: 1;
+		grid-column: 2;
+		color: #55555f;
+		transition:
+			transform 0.45s var(--ease-out-expo),
+			color 0.35s ease;
+	}
+
+	.socials a:hover .arrow {
+		color: #2bf5c0;
+		transform: translate(3px, -3px);
+	}
+
+	/* ---------------------------------------------------------- FORM */
+	/* Opaque on purpose: the particle field sits directly behind this card and
+	   backdrop-filter cannot reach it (see the note in layout.css), so contrast
+	   has to come from the surface itself. */
+	.form-wrap {
+		border: 1px solid var(--line-2, rgba(255, 255, 255, 0.16));
+		background: rgba(9, 9, 12, 0.94);
+		box-shadow: 0 24px 70px -20px rgba(0, 0, 0, 0.9);
+	}
+
+	.form-head {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 1rem 1.5rem;
+		border-bottom: 1px solid var(--line);
+		background: rgba(255, 255, 255, 0.025);
+	}
+
+	.form-head :global(.label) {
+		color: #94949e;
+	}
+
+	.form {
+		display: flex;
+		flex-direction: column;
+		gap: 1.75rem;
+		padding: 2rem 1.5rem;
+	}
+
+	@media (min-width: 640px) {
+		.form {
+			padding: 2.5rem;
+		}
+	}
+
+	.field {
+		display: flex;
+		flex-direction: column;
+		gap: 0.55rem;
+	}
+
+	/* Field labels sit above the dim --color-faint the .label class defaults to,
+	   so they stay legible as form copy rather than decorative micro-text. */
+	.field :global(.label) {
+		color: #94949e;
+		font-size: 0.625rem;
+	}
+
+	/* Fully boxed rather than underlined: the underline read as plain text over
+	   a busy background and gave no affordance that it was an input at all. */
+	input,
+	textarea {
+		width: 100%;
+		background: rgba(255, 255, 255, 0.045);
+		border: 1px solid rgba(255, 255, 255, 0.14);
+		border-radius: 2px;
+		padding: 0.8rem 0.9rem;
+		font-family: inherit;
+		font-size: 0.9375rem;
+		line-height: 1.5;
+		color: #f0f0f2;
+		outline: none;
+		resize: vertical;
+		transition:
+			border-color 0.3s ease,
+			background 0.3s ease,
+			box-shadow 0.3s ease;
+	}
+
+	input::placeholder,
+	textarea::placeholder {
+		color: #6b6b76;
+	}
+
+	input:hover,
+	textarea:hover {
+		border-color: rgba(255, 255, 255, 0.26);
+	}
+
+	input:focus,
+	textarea:focus {
+		border-color: #2bf5c0;
+		background: rgba(43, 245, 192, 0.05);
+		box-shadow: 0 0 0 3px rgba(43, 245, 192, 0.14);
+	}
+
+	/* The ring above already marks focus; suppress the global outline so the
+	   two do not stack into a double border. */
+	input:focus-visible,
+	textarea:focus-visible {
+		outline: none;
+	}
+
+	/* The label tints while its field is focused. */
+	.field:focus-within :global(.label) {
+		color: #2bf5c0;
+	}
+
+	button {
+		align-self: flex-start;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.75rem;
+		margin-top: 0.5rem;
+		padding: 0.95rem 1.75rem;
+		border: 0;
+		background: #2bf5c0;
+		color: #050506;
+		font-family: 'JetBrains Mono Variable', monospace;
+		font-size: 0.6875rem;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+		cursor: pointer;
+		transition:
+			box-shadow 0.45s ease,
+			opacity 0.3s ease;
+	}
+
+	button:hover:not(:disabled) {
+		box-shadow: 0 0 34px rgba(43, 245, 192, 0.45);
+	}
+
+	button:disabled {
+		opacity: 0.55;
+		cursor: wait;
+	}
+
+	.foot {
+		margin: 0;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.pip {
+			animation: none;
+		}
+	}
+</style>
