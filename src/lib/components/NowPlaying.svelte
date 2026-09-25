@@ -208,12 +208,22 @@
 		</span>
 
 		<span class="text">
-			<span class="label mono">
-				<span class="long">{playing ? 'Anandhu is ' : ''}</span>{label}
+			<!-- On desktop these two collapse at rest and open on hover/focus, so
+			     the resting pill is just artwork plus the track name. On mobile,
+			     where there is no hover, they are always open. -->
+			<span class="reveal">
+				<span class="label mono">
+					<span class="long">{playing ? 'Anandhu is ' : ''}</span>{label}
+				</span>
 			</span>
+
 			{#if shown?.title}
 				<span class="title">{shown.title}</span>
-				{#if shown.artist}<span class="artist">{shown.artist}</span>{/if}
+				{#if shown.artist}
+					<span class="reveal">
+						<span class="artist">{shown.artist}</span>
+					</span>
+				{/if}
 			{:else}
 				<span class="title joke">{joke}</span>
 			{/if}
@@ -248,14 +258,74 @@
 	}
 
 	@media (min-width: 900px) {
+		/*
+		 * Bottom-RIGHT on desktop: the scrub slider and its label live at the
+		 * far left of the home hero, and a card there covered them on load.
+		 *
+		 * Resting, this is a pill of just artwork + track name. Both edges that
+		 * are pinned are the right and the bottom, so expanding grows the card
+		 * left and up — away from the screen edges, and *around* the cursor
+		 * rather than out from under it, which would flicker on the boundary.
+		 */
 		.np {
-			right: auto;
+			right: 24px;
 			bottom: 24px;
-			left: 24px;
-			width: 380px;
+			left: auto;
+			width: 260px;
 			gap: 14px;
-			padding: 12px 16px 12px 12px;
+			padding: 10px 14px 10px 10px;
 			border-radius: 16px;
+			transition:
+				width 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+				background 0.8s ease,
+				border-color 0.8s ease,
+				color 0.8s ease;
+		}
+
+		.np:hover,
+		.np:focus-within {
+			width: 380px;
+			opacity: 1;
+		}
+
+		/*
+		 * Animating grid-template-rows gives a real height transition; the older
+		 * max-height trick either clips or eases against a guessed value.
+		 */
+		.reveal {
+			display: grid;
+			grid-template-rows: 0fr;
+			opacity: 0;
+			transition:
+				grid-template-rows 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+				opacity 0.2s ease;
+		}
+
+		.reveal > * {
+			min-height: 0;
+			overflow: hidden;
+		}
+
+		.np:hover .reveal,
+		.np:focus-within .reveal {
+			grid-template-rows: 1fr;
+			opacity: 1;
+		}
+
+		/* The arrow only earns its space once the card is open. */
+		.go {
+			width: 0;
+			opacity: 0;
+			overflow: hidden;
+			transition:
+				width 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+				opacity 0.2s ease;
+		}
+
+		.np:hover .go,
+		.np:focus-within .go {
+			width: 16px;
+			opacity: 1;
 		}
 	}
 
@@ -273,8 +343,8 @@
 
 	@media (min-width: 900px) {
 		.art {
-			width: 56px;
-			height: 56px;
+			width: 48px;
+			height: 48px;
 		}
 	}
 
@@ -383,16 +453,43 @@
 		color: var(--muted);
 	}
 
-	/* A whole sentence, not a track title: wrapping beats an ellipsis. */
+	/* A whole sentence, not a track title. On mobile there is width for it to
+	   wrap; in the resting desktop pill there is not, so it ellipsises until
+	   the card opens. */
 	.joke {
 		white-space: normal;
 		font-weight: 400;
 		line-height: 1.35;
 	}
 
+	@media (min-width: 900px) {
+		.joke {
+			white-space: nowrap;
+		}
+
+		.np:hover .joke,
+		.np:focus-within .joke {
+			white-space: normal;
+		}
+	}
+
 	.go {
 		flex-shrink: 0;
 		font-size: 16px;
 		color: var(--muted);
+	}
+
+	/* The global reduce rule already zeroes durations; this makes sure the
+	   collapsed state is never left half-open when transitions are off. */
+	@media (prefers-reduced-motion: reduce) {
+		.reveal {
+			grid-template-rows: 1fr;
+			opacity: 1;
+		}
+
+		.go {
+			width: auto;
+			opacity: 1;
+		}
 	}
 </style>
