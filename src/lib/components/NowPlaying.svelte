@@ -13,6 +13,10 @@
 	 * anywhere in the portfolio bundle. If the worker is unreachable, or
 	 * PUBLIC_NOW_PLAYING_WS is unset, the card never appears. Visitors are
 	 * never shown a connection error.
+	 *
+	 * Two shapes:
+	 *   desktop (>=900px) — a pill that widens on hover or focus
+	 *   mobile  (<900px)  — a small tap-to-expand FAB that closes on scroll
 	 */
 
 	interface State {
@@ -26,6 +30,11 @@
 	}
 
 	const WS_URL = env.PUBLIC_NOW_PLAYING_WS ?? '';
+
+	/** How far you have to scroll before an expanded card gets out of the way. */
+	const SCROLL_TO_CLOSE = 40;
+	/** How long the card shows itself once, on first appearance. */
+	const PEEK_MS = 5000;
 
 	/**
 	 * Shown when the room is idle and we never saw a track this visit — a
@@ -56,10 +65,20 @@
 	 */
 	let lastTrack = $state<State | null>(null);
 
+	/** Under 900px the card is a FAB; above it, hover drives the expansion. */
+	let narrow = $state(false);
+	let expanded = $state(false);
+	/** Plain locals: changing these must not re-run the effects that set them. */
+	let peeked = false;
+	let reduced = false;
+
 	const visible = $derived(Boolean(WS_URL) && connected && live !== null);
 	const playing = $derived(live?.playing === true && Boolean(live.title));
 	/** What the card displays: the live track, or the remembered one. */
 	const shown = $derived(playing ? live : lastTrack);
+	/** Only a playing track is worth linking to. */
+	const linkHref = $derived(playing && shown?.url ? shown.url : null);
+	const collapsed = $derived(narrow && !expanded);
 
 	/**
 	 * Reads kerala.now so it re-derives on the clock's 15s tick — no second
@@ -100,9 +119,55 @@
 	 */
 	const joke = $derived(IDLE_LINES[(seed + Math.floor(kerala.minutes / 5)) % IDLE_LINES.length]);
 
+	/** What the expanded card announces. */
+	const cardLabel = $derived(
+		shown?.title
+			? `${playing ? 'Now listening' : 'Last played'}: ${shown.title}${shown.artist ? ` by ${shown.artist}` : ''}`
+			: `Nothing playing. ${joke}`
+	);
+
+	/** What the collapsed FAB announces — it is a control, so it says so. */
+	const tapLabel = $derived(
+		shown?.title ? `Now listening: ${shown.title}. Show details.` : 'Nothing playing. Show why.'
+	);
+
+	/**
+	 * Show the card once when it first appears, then get out of the way.
+	 * Without this the FAB is only an album thumbnail, and most visitors would
+	 * never discover it does anything.
+	 */
+	$effect(() => {
+		if (!visible || !narrow || peeked) return;
+		peeked = true;
+		if (reduced) return;
+		expanded = true;
+		const id = setTimeout(() => (expanded = false), PEEK_MS);
+		return () => clearTimeout(id);
+	});
+
+	/**
+	 * Scrolling means "I've moved on", in either direction — on a short page
+	 * there may be nowhere to scroll down to. The threshold stops a stray
+	 * nudge from snapping it shut while it is being read.
+	 */
+	$effect(() => {
+		if (!expanded || !narrow) return;
+		const from = window.scrollY;
+		const onScroll = () => {
+			if (Math.abs(window.scrollY - from) > SCROLL_TO_CLOSE) expanded = false;
+		};
+		window.addEventListener('scroll', onScroll, { passive: true });
+		return () => window.removeEventListener('scroll', onScroll);
+	});
+
 	onMount(() => {
 		seed = Math.floor(Math.random() * IDLE_LINES.length);
-		if (!WS_URL) return;
+
+		const narrowQuery = window.matchMedia('(max-width: 899px)');
+		const syncNarrow = () => (narrow = narrowQuery.matches);
+		syncNarrow();
+		narrowQuery.addEventListener('change', syncNarrow);
+		reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 		let socket: WebSocket | null = null;
 		let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
@@ -185,6 +250,7 @@
 
 		return () => {
 			closed = true;
+			narrowQuery.removeEventListener('change', syncNarrow);
 			document.removeEventListener('visibilitychange', onVisibility);
 			if (reconnectTimer !== undefined) clearTimeout(reconnectTimer);
 			const s = socket;
@@ -195,55 +261,71 @@
 </script>
 
 {#if browser && visible}
-	<svelte:element
-		this={playing && shown?.url ? 'a' : 'div'}
-		class="np"
-		class:idle={!playing}
-		class:bare={!shown}
-		href={playing && shown?.url ? shown.url : undefined}
-		target={playing && shown?.url ? '_blank' : undefined}
-		rel={playing && shown?.url ? 'noopener noreferrer' : undefined}
-		aria-label={shown?.title
-			? `${playing ? 'Now listening' : 'Last played'}: ${shown.title}${shown.artist ? ` by ${shown.artist}` : ''}`
-			: `Nothing playing. ${joke}`}
-	>
-		<span class="art">
-			{#if shown?.artwork}
-				<img src={shown.artwork} alt="" width="56" height="56" loading="lazy" />
-			{/if}
-			<span class="eq" aria-hidden="true">
-				<i style="--dur: 0.9s; --delay: 0s"></i>
-				<i style="--dur: 0.7s; --delay: -0.3s"></i>
-				<i style="--dur: 1.1s; --delay: -0.6s"></i>
-			</span>
-		</span>
-
-		<span class="text">
-			<!-- On desktop these two collapse at rest and open on hover/focus, so
-			     the resting pill is just artwork plus the track name. On mobile,
-			     where there is no hover, they are always open. -->
-			<span class="reveal">
-				<span class="label mono">
-					<span class="long">{playing ? 'Anandhu is ' : ''}</span>{label}
+	<!--
+		The outer box is what animates, so it has to survive the expand. The tap
+		target is an overlay rather than the card itself: swapping the card
+		between <button> and <a> would destroy and rebuild the element, and the
+		size transition would never run.
+	-->
+	<div class="np" class:idle={!playing} class:bare={!shown} class:open={expanded}>
+		<svelte:element
+			this={linkHref ? 'a' : 'div'}
+			class="inner"
+			href={linkHref ?? undefined}
+			target={linkHref ? '_blank' : undefined}
+			rel={linkHref ? 'noopener noreferrer' : undefined}
+			aria-label={linkHref ? cardLabel : undefined}
+			inert={collapsed || undefined}
+		>
+			<span class="art">
+				{#if shown?.artwork}
+					<img src={shown.artwork} alt="" width="56" height="56" loading="lazy" />
+				{/if}
+				<!-- Stands in for the artwork when there is no track to show one for. -->
+				<span class="mark" aria-hidden="true">!</span>
+				<span class="eq" aria-hidden="true">
+					<i style="--dur: 0.9s; --delay: 0s"></i>
+					<i style="--dur: 0.7s; --delay: -0.3s"></i>
+					<i style="--dur: 1.1s; --delay: -0.6s"></i>
 				</span>
 			</span>
 
-			{#if shown?.title}
-				<span class="title">{shown.title}</span>
-				{#if shown.artist}
-					<span class="reveal">
-						<span class="artist">{shown.artist}</span>
+			<span class="text">
+				<!-- On desktop these two collapse at rest and open on hover or focus,
+				     so the resting pill is just artwork plus the track name. -->
+				<span class="reveal">
+					<span class="label mono">
+						<span class="long">{playing ? 'Anandhu is ' : ''}</span>{label}
 					</span>
-				{/if}
-			{:else}
-				<span class="title joke">{joke}</span>
-			{/if}
-		</span>
+				</span>
 
-		{#if playing && shown?.url}
-			<span class="go" aria-hidden="true">↗</span>
+				{#if shown?.title}
+					<span class="title">{shown.title}</span>
+					{#if shown.artist}
+						<span class="reveal">
+							<span class="artist">{shown.artist}</span>
+						</span>
+					{/if}
+				{:else}
+					<span class="title joke">{joke}</span>
+				{/if}
+			</span>
+
+			{#if linkHref}
+				<span class="go" aria-hidden="true">↗</span>
+			{/if}
+		</svelte:element>
+
+		{#if collapsed}
+			<button
+				class="hit"
+				type="button"
+				aria-expanded="false"
+				aria-label={tapLabel}
+				onclick={() => (expanded = true)}
+			></button>
 		{/if}
-	</svelte:element>
+	</div>
 {/if}
 
 <style>
@@ -253,10 +335,6 @@
 		right: 12px;
 		bottom: 12px;
 		left: 12px;
-		display: flex;
-		align-items: center;
-		gap: 12px;
-		padding: 10px 16px 10px 10px;
 		border: 1px solid var(--line);
 		border-radius: 14px;
 		background: var(--card);
@@ -268,26 +346,105 @@
 			color 0.8s ease;
 	}
 
+	.inner {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		padding: 10px 16px 10px 10px;
+		color: inherit;
+		text-decoration: none;
+	}
+
+	/* Fills the collapsed card so the whole 56px square is one tap target. */
+	.hit {
+		position: absolute;
+		z-index: 1;
+		inset: 0;
+		padding: 0;
+		border: 0;
+		border-radius: inherit;
+		background: none;
+		appearance: none;
+	}
+
+	/* ============================================================
+	   Mobile: a FAB that expands on tap and closes on scroll
+	   ============================================================ */
+	@media (max-width: 899px) {
+		.np {
+			/* max-* rather than width/height: both ends are lengths, so the
+			   expansion interpolates. `auto` would not animate at all. */
+			overflow: hidden;
+			max-width: 100%;
+			/*
+			 * Deliberately close to the tallest this card can actually be
+			 * (~97px: label + title + artist, every one of them single-line).
+			 * A generous ceiling like 240px is worse, not safer — max-height
+			 * would clear the real content height within the first frame or
+			 * two, so the box would snap to full height and only the width
+			 * would ease. Kept tight, the height eases for most of the run.
+			 */
+			max-height: 120px;
+			margin-left: auto;
+			transition:
+				max-width 0.32s cubic-bezier(0.22, 1, 0.36, 1),
+				max-height 0.32s cubic-bezier(0.22, 1, 0.36, 1),
+				background 0.8s ease,
+				border-color 0.8s ease,
+				color 0.8s ease;
+		}
+
+		/*
+		 * `margin-left: auto` stays on in BOTH states, and that is load-bearing.
+		 * left and right are both pinned, so the auto margin absorbs whatever
+		 * max-width does not use and holds the box against the right edge.
+		 * Setting it only while collapsed made the card teleport 310px to the
+		 * left the instant `.open` landed, and then grow rightward — the exact
+		 * opposite of expanding toward the left.
+		 */
+		.np:not(.open) {
+			max-width: 56px;
+			max-height: 56px;
+		}
+
+		.np:not(.open) .inner {
+			padding: 6px;
+		}
+
+		.np:not(.open) .text,
+		.np:not(.open) .go {
+			display: none;
+		}
+
+		/* Nothing playing and nothing remembered: there is no artwork, so the
+		   mark stands in and the bars step aside. */
+		.np.bare:not(.open) .eq {
+			display: none;
+		}
+
+		.np.bare:not(.open) .mark {
+			display: grid;
+		}
+	}
+
+	/* ============================================================
+	   Desktop: a pill that widens on hover or focus
+	   ============================================================ */
 	@media (min-width: 900px) {
 		/*
-		 * Bottom-RIGHT on desktop: the scrub slider and its label live at the
-		 * far left of the home hero, and a card there covered them on load.
+		 * Bottom-RIGHT: the scrub slider and its label live at the far left of
+		 * the home hero, and a card there covered them on load.
 		 *
-		 * Resting, this is a pill of just artwork + track name. Both edges that
-		 * are pinned are the right and the bottom, so expanding grows the card
-		 * left and up — away from the screen edges, and *around* the cursor
-		 * rather than out from under it, which would flicker on the boundary.
+		 * Resting, this is a pill of just artwork + track name. The pinned
+		 * edges are the right and the bottom, so expanding grows the card left
+		 * and up — away from the screen edges, and *around* the cursor rather
+		 * than out from under it, which would flicker on the boundary.
 		 */
 		.np {
 			right: 24px;
 			bottom: 24px;
 			left: auto;
 			width: 220px;
-			/* Spacing lives on the children, not as a flex gap: a gap is still
-			   applied either side of the zero-width arrow at rest, which wasted
-			   14px inside the pill and pushed the title's ellipsis in early. */
-			gap: 0;
-			padding: 10px 14px 10px 10px;
 			border-radius: 16px;
 			transition:
 				width 0.35s cubic-bezier(0.22, 1, 0.36, 1),
@@ -296,10 +453,17 @@
 				color 0.8s ease;
 		}
 
+		.inner {
+			/* Spacing lives on the children, not as a flex gap: a gap is still
+			   applied either side of the zero-width arrow at rest, which wasted
+			   14px inside the pill and pushed the title's ellipsis in early. */
+			gap: 0;
+			padding: 10px 14px 10px 10px;
+		}
+
 		.np:hover,
 		.np:focus-within {
 			width: 380px;
-			opacity: 1;
 		}
 
 		/*
@@ -346,20 +510,6 @@
 			overflow: hidden;
 		}
 
-		/*
-		 * The label must never wrap mid-transition.
-		 *
-		 * "Anandhu is now listening · 13:30" does not fit the narrow resting
-		 * pill, so it used to wrap to two lines and un-wrap partway through the
-		 * expansion. The card's height therefore depended on its width, and it
-		 * overshot by ~11px and snapped back in a single frame. Pinning it to
-		 * one line makes the height change monotonic; it simply stays clipped
-		 * by .reveal's overflow until there is room for it.
-		 */
-		.label {
-			white-space: nowrap;
-		}
-
 		.np:hover .reveal,
 		.np:focus-within .reveal {
 			grid-template-rows: 1fr;
@@ -390,7 +540,9 @@
 		}
 	}
 
-	/* ---- artwork + equaliser ---- */
+	/* ============================================================
+	   Pieces
+	   ============================================================ */
 	.art {
 		position: relative;
 		flex-shrink: 0;
@@ -413,6 +565,19 @@
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
+	}
+
+	/* Hidden unless the mobile FAB is collapsed with nothing to show. */
+	.mark {
+		display: none;
+		place-items: center;
+		width: 100%;
+		height: 100%;
+		font-size: 22px;
+		font-weight: 500;
+		line-height: 1;
+		color: var(--accent);
+		transition: color 0.8s ease;
 	}
 
 	.eq {
@@ -450,7 +615,6 @@
 		transform: scaleY(0.35);
 	}
 
-	/* ---- text ---- */
 	.text {
 		display: flex;
 		min-width: 0;
@@ -465,10 +629,20 @@
 		}
 	}
 
+	/*
+	 * Never wraps, on either breakpoint.
+	 *
+	 * A wrapping label makes the card's height depend on its width, so both
+	 * expansions overshot and snapped back mid-flight — 11px on desktop, 36px
+	 * on mobile. Pinned to one line the height change is monotonic; the label
+	 * simply stays clipped until there is room for it.
+	 */
 	.label {
+		overflow: hidden;
 		font-size: 11px;
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
+		white-space: nowrap;
 		color: var(--muted);
 	}
 
@@ -514,23 +688,23 @@
 		color: var(--muted);
 	}
 
-	/* A whole sentence, not a track title. On mobile there is width for it to
-	   wrap; in the resting desktop pill there is not, so it ellipsises until
-	   the card opens. */
+	/* A whole sentence, not a track title, so it may wrap on a phone. */
 	.joke {
 		white-space: normal;
 		font-weight: 400;
 		line-height: 1.35;
 	}
 
-	@media (min-width: 900px) {
+	@media (max-width: 899px) {
+		/*
+		 * Exactly two lines, always — the last thing whose height could depend
+		 * on the card's width. Left free, the joke wrapped to several lines
+		 * while the card was narrow and un-wrapped as it grew, so the box
+		 * overshot by 20px near the end of the expansion and dropped back in a
+		 * single frame. Every joke fits within two lines at full width.
+		 */
 		.joke {
-			white-space: nowrap;
-		}
-
-		.np:hover .joke,
-		.np:focus-within .joke {
-			white-space: normal;
+			height: 2.7em;
 		}
 	}
 
@@ -540,8 +714,8 @@
 		color: var(--muted);
 	}
 
-	/* The global reduce rule already zeroes durations; this makes sure the
-	   collapsed state is never left half-open when transitions are off. */
+	/* The global reduce rule already zeroes durations; this makes sure nothing
+	   is left half-open when transitions are off. */
 	@media (prefers-reduced-motion: reduce) {
 		.reveal {
 			grid-template-rows: 1fr;
