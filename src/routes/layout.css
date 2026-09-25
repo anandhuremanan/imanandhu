@@ -1,326 +1,279 @@
-@import 'tailwindcss';
-@plugin '@tailwindcss/typography';
-
 /* ============================================================
-   DESIGN TOKENS — dark technical / lab
+   Kerala time — global stylesheet
+
+   No framework. The palette is four sets of custom properties swapped by
+   `<html data-theme>`, which the server sets from IST before first paint.
    ============================================================ */
-@theme {
-	--color-void: #050506;
-	--color-bg: #08080a;
-	--color-elev: #0d0d10;
-	--color-line: rgba(255, 255, 255, 0.08);
-	--color-line-2: rgba(255, 255, 255, 0.16);
-	--color-ink: #f0f0f2;
-	--color-dim: #94949e;
-	--color-faint: #83838e;
-	--color-accent: #2bf5c0;
-	--color-violet: #7c5cff;
-	--color-amber: #ffb03a;
-
-	--font-display: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
-	--font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
-
-	--ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
-	--ease-in-out-quint: cubic-bezier(0.83, 0, 0.17, 1);
-}
 
 :root {
-	--accent: #2bf5c0;
-	--violet: #7c5cff;
-	--line: rgba(255, 255, 255, 0.08);
-	--gutter: 1.25rem;
-	--nav-h: 4.5rem;
+	--bg: #0a0e1a;
+	--fg: #e6e9f2;
+	--muted: #98a0b5;
+	--accent: #f5c451;
+	--line: #262c3d;
+	--card: #131a2c;
+
+	--gutter: 24px;
+	--font: Geist, 'Geist Variable', 'Helvetica Neue', Arial, sans-serif;
+	--mono: 'Geist Mono Variable', 'Geist Mono', ui-monospace, SFMono-Regular, monospace;
+
+	/* Room at the bottom of every page so the now-listening card, which is
+	   position: fixed, can never sit on top of the footer. */
+	--widget-space: 104px;
+
 	color-scheme: dark;
 }
 
-@media (min-width: 768px) {
-	:root {
-		--gutter: 2.5rem;
-	}
+:root[data-theme='dawn'] {
+	--bg: #f4d6c0;
+	--fg: #2a1a12;
+	--muted: #5e4336;
+	--accent: #a63a12;
+	--line: #d9b39a;
+	--card: #f8e4d4;
+	color-scheme: light;
 }
-@media (min-width: 1280px) {
+
+:root[data-theme='day'] {
+	--bg: #f3f1ea;
+	--fg: #141413;
+	--muted: #5e5c56;
+	--accent: #1846d6;
+	--line: #d6d3c9;
+	--card: #fbfaf6;
+	color-scheme: light;
+}
+
+:root[data-theme='dusk'] {
+	--bg: #d9542b;
+	--fg: #170904;
+	--muted: #3a1508;
+	--accent: #fff1de;
+	--line: #b8431f;
+	--card: #e26a43;
+	color-scheme: light;
+}
+
+:root[data-theme='night'] {
+	--bg: #0a0e1a;
+	--fg: #e6e9f2;
+	--muted: #98a0b5;
+	--accent: #f5c451;
+	--line: #262c3d;
+	--card: #131a2c;
+	color-scheme: dark;
+}
+
+@media (min-width: 900px) {
 	:root {
-		--gutter: 4rem;
+		--gutter: 80px;
+		--widget-space: 136px;
 	}
 }
 
 /* ============================================================
-   BASE
+   Reset — only what this site actually needs
    ============================================================ */
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
 * {
+	margin: 0;
 	-webkit-tap-highlight-color: transparent;
 }
 
 html {
-	scroll-behavior: smooth;
-	background: #050506;
+	background: var(--bg);
+	/* The <html> element carries the transition as well as <body>, so the
+	   overscroll area past the page edges changes colour with everything else. */
+	transition: background 0.8s ease;
 }
 
 body {
-	background: #050506;
-	color: #f0f0f2;
-	font-family: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
-	font-feature-settings: 'ss01', 'cv01';
-	overflow-x: hidden;
+	min-height: 100svh;
+	background: var(--bg);
+	color: var(--fg);
+	font-family: var(--font);
+	font-size: 16px;
+	line-height: 1.5;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
+	transition:
+		background 0.8s ease,
+		color 0.8s ease;
 }
 
-::selection {
-	background: #2bf5c0;
-	color: #050506;
+img,
+svg {
+	display: block;
+	max-width: 100%;
 }
 
-/* Scrollbar */
-::-webkit-scrollbar {
-	width: 9px;
-	height: 9px;
+a {
+	color: inherit;
+	text-decoration: none;
 }
-::-webkit-scrollbar-track {
-	background: #050506;
+
+a:hover {
+	opacity: 0.7;
 }
-::-webkit-scrollbar-thumb {
-	background: rgba(255, 255, 255, 0.12);
-	border-radius: 99px;
+
+button,
+input,
+textarea {
+	font: inherit;
+	color: inherit;
 }
-::-webkit-scrollbar-thumb:hover {
-	background: rgba(43, 245, 192, 0.4);
+
+button {
+	cursor: pointer;
 }
 
 :focus-visible {
-	outline: 1px solid var(--accent);
+	outline: 2px solid var(--accent);
 	outline-offset: 3px;
-}
-
-/* ============================================================
-   TYPE UTILITIES
-   ============================================================ */
-.mono {
-	font-family: 'JetBrains Mono Variable', ui-monospace, monospace;
-	font-variant-ligatures: none;
-}
-
-/* Micro label: [ 001 / INDEX ] */
-.label {
-	font-family: 'JetBrains Mono Variable', ui-monospace, monospace;
-	font-size: 0.6875rem;
-	line-height: 1;
-	letter-spacing: 0.18em;
-	text-transform: uppercase;
-	color: #83838e;
-}
-
-.label-accent {
-	color: var(--accent);
-}
-
-/* Oversized display type that stays tight */
-.display {
-	font-weight: 500;
-	letter-spacing: -0.04em;
-	line-height: 0.88;
-	text-wrap: balance;
-}
-
-.fluid-xl {
-	font-size: clamp(3rem, 13vw, 11rem);
-}
-.fluid-lg {
-	font-size: clamp(2.25rem, 7vw, 5.5rem);
-}
-.fluid-md {
-	font-size: clamp(1.75rem, 4.2vw, 3.25rem);
-}
-
-/* ============================================================
-   SURFACES
-   ============================================================ */
-/*
- * NOTE: do not rely on backdrop-filter for contrast anywhere inside the page
- * content. `.shell` in +layout.svelte is positioned with a z-index, which makes
- * it a stacking context — so an element's backdrop stops at `.shell` and never
- * includes the fixed WebGL canvas behind it. The blur would filter empty space
- * while the particles show through at full sharpness. Panels carry their own
- * opaque-enough background instead; the blur is kept only as a bonus for
- * anything that does happen to sit behind them.
- */
-.panel {
-	position: relative;
-	background:
-		linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.015) 100%),
-		rgba(9, 9, 12, 0.88);
-	border: 1px solid var(--line);
-	backdrop-filter: blur(14px) saturate(140%);
-	-webkit-backdrop-filter: blur(14px) saturate(140%);
 	border-radius: 2px;
-	transition:
-		border-color 0.5s var(--ease-out-expo),
-		background 0.5s var(--ease-out-expo);
 }
 
-.panel:hover {
-	border-color: rgba(255, 255, 255, 0.16);
-}
-
-/* Corner ticks — the 'instrument' detail */
-.ticks::before,
-.ticks::after {
-	content: '';
-	position: absolute;
-	width: 7px;
-	height: 7px;
-	border-color: rgba(255, 255, 255, 0.25);
-	transition: border-color 0.4s ease;
-	pointer-events: none;
-}
-.ticks::before {
-	top: -1px;
-	left: -1px;
-	border-top: 1px solid;
-	border-left: 1px solid;
-}
-.ticks::after {
-	bottom: -1px;
-	right: -1px;
-	border-bottom: 1px solid;
-	border-right: 1px solid;
-}
-.ticks:hover::before,
-.ticks:hover::after {
-	border-color: var(--accent);
+::selection {
+	background: var(--fg);
+	color: var(--bg);
 }
 
 /* ============================================================
-   OVERLAYS — grid + grain + vignette, fixed above the canvas
+   Shared primitives
    ============================================================ */
-.grid-overlay {
-	position: fixed;
-	inset: 0;
-	z-index: 1;
-	pointer-events: none;
-	background-image:
-		linear-gradient(to right, rgba(255, 255, 255, 0.028) 1px, transparent 1px),
-		linear-gradient(to bottom, rgba(255, 255, 255, 0.028) 1px, transparent 1px);
-	background-size: 80px 80px;
-	mask-image: radial-gradient(ellipse 100% 70% at 50% 40%, #000 20%, transparent 85%);
-	-webkit-mask-image: radial-gradient(ellipse 100% 70% at 50% 40%, #000 20%, transparent 85%);
+
+/** Page shell: the padding every route sits inside. */
+.page {
+	display: flex;
+	min-height: 100svh;
+	flex-direction: column;
+	padding: 20px var(--gutter) var(--widget-space);
 }
 
-.grain-overlay {
-	position: fixed;
-	inset: -150%;
-	z-index: 60;
-	pointer-events: none;
-	opacity: 0.045;
-	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-	animation: grain 0.6s steps(2) infinite;
-	will-change: transform;
-}
-
-@keyframes grain {
-	0% {
-		transform: translate(0, 0);
-	}
-	25% {
-		transform: translate(-2%, 1.5%);
-	}
-	50% {
-		transform: translate(1.5%, -2%);
-	}
-	75% {
-		transform: translate(-1%, -1%);
-	}
-	100% {
-		transform: translate(0, 0);
+@media (min-width: 900px) {
+	.page {
+		padding-top: 48px;
 	}
 }
 
-.vignette {
-	position: fixed;
-	inset: 0;
-	z-index: 2;
-	pointer-events: none;
-	background: radial-gradient(
-		ellipse 85% 75% at 50% 45%,
-		transparent 35%,
-		rgba(5, 5, 6, 0.82) 100%
-	);
+.mono {
+	font-family: var(--mono);
+	font-weight: 400;
 }
 
-/* ============================================================
-   SCROLL REVEAL
-   ============================================================ */
-[data-reveal] {
-	opacity: 0;
-	transform: translate3d(0, 26px, 0);
+/** Small monospaced metadata — labels, years, captions. */
+.meta {
+	font-family: var(--mono);
+	font-size: 12px;
+	color: var(--muted);
+}
+
+@media (min-width: 900px) {
+	.meta {
+		font-size: 13px;
+	}
+}
+
+/** Pill button, used for "Back to now", "Show all", links in case studies. */
+.pill {
+	display: inline-flex;
+	min-height: 44px;
+	align-items: center;
+	justify-content: center;
+	padding: 0 20px;
+	border: 1px solid var(--fg);
+	border-radius: 999px;
+	background: transparent;
+	color: var(--fg);
+	font-size: 15px;
 	transition:
-		opacity 1s var(--ease-out-expo),
-		transform 1s var(--ease-out-expo);
-	transition-delay: var(--reveal-delay, 0ms);
+		background 0.2s ease,
+		color 0.2s ease,
+		border-color 0.8s ease;
 }
 
-[data-reveal='in'] {
+.pill:hover {
 	opacity: 1;
-	transform: none;
+	background: var(--fg);
+	color: var(--bg);
 }
 
-/* Line that draws itself in */
-[data-rule] {
-	transform: scaleX(0);
-	transform-origin: left;
-	transition: transform 1.1s var(--ease-out-expo);
-	transition-delay: var(--reveal-delay, 0ms);
+.pill-quiet {
+	border-color: var(--muted);
 }
-[data-rule='in'] {
-	transform: scaleX(1);
+
+/** Underlined inline link inside a sentence. */
+.ul {
+	text-decoration: underline;
+	text-underline-offset: 6px;
+	text-decoration-thickness: 2px;
+}
+
+@media (min-width: 900px) {
+	.ul {
+		text-underline-offset: 8px;
+	}
+}
+
+/* Display type. The clock is the largest thing on the site and needs tabular
+   figures so the minutes do not shift the layout every time they tick. */
+.clock {
+	font-family: var(--mono);
+	font-weight: 300;
+	font-size: 112px;
+	line-height: 0.9;
+	letter-spacing: -0.07em;
+	font-variant-numeric: tabular-nums;
+}
+
+@media (min-width: 900px) {
+	.clock {
+		font-size: 240px;
+	}
+}
+
+.h1 {
+	font-size: 52px;
+	font-weight: 500;
+	line-height: 0.95;
+	letter-spacing: -0.045em;
+}
+
+@media (min-width: 900px) {
+	.h1 {
+		font-size: 96px;
+	}
+}
+
+.h2 {
+	font-size: 30px;
+	font-weight: 500;
+	letter-spacing: -0.02em;
+}
+
+@media (min-width: 900px) {
+	.h2 {
+		font-size: 44px;
+	}
 }
 
 /* ============================================================
-   LINKS
-   ============================================================ */
-.link-under {
-	position: relative;
-	display: inline-block;
-}
-.link-under::after {
-	content: '';
-	position: absolute;
-	left: 0;
-	bottom: -2px;
-	width: 100%;
-	height: 1px;
-	background: currentColor;
-	transform: scaleX(0);
-	transform-origin: right;
-	transition: transform 0.55s var(--ease-out-expo);
-}
-.link-under:hover::after {
-	transform: scaleX(1);
-	transform-origin: left;
-}
-
-/* ============================================================
-   MOTION SAFETY
+   Motion safety
    ============================================================ */
 @media (prefers-reduced-motion: reduce) {
-	html {
-		scroll-behavior: auto;
-	}
-	.grain-overlay {
-		animation: none;
-	}
-	[data-reveal] {
-		opacity: 1 !important;
-		transform: none !important;
-	}
-	[data-rule] {
-		transform: scaleX(1) !important;
-	}
+	html,
+	body,
 	*,
 	*::before,
 	*::after {
 		animation-duration: 0.01ms !important;
 		animation-iteration-count: 1 !important;
 		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
 	}
 }

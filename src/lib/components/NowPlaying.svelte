@@ -2,29 +2,40 @@
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import { env } from '$env/dynamic/public';
+	import { kerala } from '$lib/kerala.svelte';
 
 	/**
-	 * Visitor-side view of the now-playing room.
+	 * Visitor-side view of the now-playing room. The data source and protocol
+	 * are unchanged — this is purely the themed presentation of it.
 	 *
-	 * Read-only by construction: it authenticates as `visitor` and the server
-	 * refuses state updates from that role, so there is no owner credential
-	 * anywhere in the portfolio bundle.
-	 *
-	 * If the worker is unreachable, or PUBLIC_NOW_PLAYING_WS is unset, the card
-	 * simply never appears. Visitors are never shown a connection error.
+	 * Read-only by construction: it authenticates as `visitor`, and the server
+	 * refuses state updates from that role, so no owner credential exists
+	 * anywhere in the portfolio bundle. If the worker is unreachable, or
+	 * PUBLIC_NOW_PLAYING_WS is unset, the card never appears. Visitors are
+	 * never shown a connection error.
 	 */
 
 	interface State {
 		playing: boolean;
 		title: string | null;
 		artist: string | null;
-		album: string | null;
 		artwork: string | null;
 		url: string | null;
+		/** Server time of this state. Used for "last played N ago". */
+		timestamp: number;
 	}
 
-	// These read as a follow-on to the "isn't playing any music" label, so none
-	// of them restate the fact or repeat his name.
+	const WS_URL = env.PUBLIC_NOW_PLAYING_WS ?? '';
+
+	/**
+	 * Shown when the room is idle and we never saw a track this visit — a
+	 * visitor arriving during a quiet spell. "Last played" needs a track to
+	 * point at, so without one there is nothing factual to say and a flat
+	 * "Not listening" reads like the widget is broken.
+	 *
+	 * These read as a follow-on to the "Nothing playing" label, so none of
+	 * them restate the fact or repeat his name.
+	 */
 	const IDLE_LINES = [
 		'Suspicious, frankly.',
 		'He has stopped feeding the algorithm.',
@@ -35,37 +46,63 @@
 		'Even the shuffle gave up.'
 	];
 
-	// `$env/dynamic/public` rather than `$env/static/public`: the static form
-	// fails the build when the variable is not exported, which would break
-	// deploys before the worker exists.
-	const WS_URL = env.PUBLIC_NOW_PLAYING_WS ?? '';
-
-	let track = $state<State | null>(null);
+	let live = $state<State | null>(null);
 	let connected = $state(false);
-	let idleLine = $state(IDLE_LINES[0]);
 
-	// Only render once we have actually heard from the server, so the card never
-	// flashes in and out while the socket is still negotiating.
-	const visible = $derived(Boolean(WS_URL) && connected && track !== null);
-	const nowPlaying = $derived(track?.playing === true && Boolean(track.title));
+	/**
+	 * The most recent track we actually saw playing. The server nulls every
+	 * field when it goes idle, so without remembering it here there would be
+	 * nothing to put behind "Last played".
+	 */
+	let lastTrack = $state<State | null>(null);
+
+	const visible = $derived(Boolean(WS_URL) && connected && live !== null);
+	const playing = $derived(live?.playing === true && Boolean(live.title));
+	/** What the card displays: the live track, or the remembered one. */
+	const shown = $derived(playing ? live : lastTrack);
+
+	/**
+	 * Reads kerala.now so it re-derives on the clock's 15s tick — no second
+	 * timer just to keep "12m ago" honest.
+	 */
+	const since = $derived.by(() => {
+		void kerala.now;
+		const at = live?.timestamp;
+		if (!at) return '';
+		const mins = Math.floor((Date.now() - at) / 60000);
+		if (mins < 1) return 'just now';
+		if (mins < 60) return `${mins}m ago`;
+		const hours = Math.floor(mins / 60);
+		if (hours < 24) return `${hours}h ago`;
+		return `${Math.floor(hours / 24)}d ago`;
+	});
+
+	const label = $derived(
+		playing
+			? `now listening · ${kerala.clock}`
+			: shown
+				? `Last played · ${since}`
+				: `Nothing playing · ${kerala.clock}`
+	);
+
+	/**
+	 * Rotates every five minutes off the clock that is already ticking — no
+	 * second timer, and nothing changes fast enough to nag someone mid-read.
+	 */
+	const joke = $derived(IDLE_LINES[Math.floor(kerala.minutes / 5) % IDLE_LINES.length]);
 
 	onMount(() => {
 		if (!WS_URL) return;
 
-		const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
 		let socket: WebSocket | null = null;
 		let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
-		let rotateTimer: ReturnType<typeof setInterval> | undefined;
 		let attempts = 0;
 		let closed = false;
 
 		function scheduleReconnect() {
 			if (closed || reconnectTimer !== undefined) return;
-			// Don't burn retries against a worker we can't see while nobody is
-			// looking at the tab; visibilitychange resumes immediately.
+			// Nobody is looking at a hidden tab; visibilitychange resumes it.
 			if (document.visibilityState === 'hidden') return;
-
 			const delay = Math.min(1000 * 2 ** attempts, 30_000);
 			attempts++;
 			reconnectTimer = setTimeout(
@@ -79,7 +116,6 @@
 
 		function connect() {
 			if (closed || socket) return;
-
 			let ws: WebSocket;
 			try {
 				ws = new WebSocket(WS_URL);
@@ -96,28 +132,26 @@
 
 			ws.addEventListener('message', (event) => {
 				if (socket !== ws) return;
-				let message: { type?: string } & Partial<State>;
+				let msg: { type?: string } & Partial<State>;
 				try {
-					message = JSON.parse(String(event.data));
+					msg = JSON.parse(String(event.data));
 				} catch {
 					return;
 				}
 				// Must match the server's frame type in worker/src/protocol.ts.
-				if (message.type !== 'state') return;
+				if (msg.type !== 'state') return;
 
 				connected = true;
-				const wasPlaying = track?.playing === true;
-				track = {
-					playing: Boolean(message.playing),
-					title: message.title ?? null,
-					artist: message.artist ?? null,
-					album: message.album ?? null,
-					artwork: message.artwork ?? null,
-					url: message.url ?? null
+				const next: State = {
+					playing: Boolean(msg.playing),
+					title: msg.title ?? null,
+					artist: msg.artist ?? null,
+					artwork: msg.artwork ?? null,
+					url: msg.url ?? null,
+					timestamp: typeof msg.timestamp === 'number' ? msg.timestamp : Date.now()
 				};
-				// New idle spell gets a new line; a line does not change under you
-				// mid-read just because another state frame arrived.
-				if (wasPlaying && !track.playing) pickIdleLine();
+				live = next;
+				if (next.playing && next.title) lastTrack = next;
 			});
 
 			const drop = () => {
@@ -130,31 +164,19 @@
 			ws.addEventListener('error', drop);
 		}
 
-		function pickIdleLine() {
-			const next = IDLE_LINES[Math.floor(Math.random() * IDLE_LINES.length)];
-			idleLine =
-				next === idleLine ? IDLE_LINES[(IDLE_LINES.indexOf(next) + 1) % IDLE_LINES.length] : next;
-		}
-
 		function onVisibility() {
 			if (document.visibilityState !== 'visible') return;
 			attempts = 0;
 			if (!socket) connect();
 		}
 
-		pickIdleLine();
 		document.addEventListener('visibilitychange', onVisibility);
 		connect();
-
-		// Slow rotation so the idle card has some life without nagging. Static
-		// for anyone who asked for reduced motion.
-		if (!reduced) rotateTimer = setInterval(() => !nowPlaying && pickIdleLine(), 30_000);
 
 		return () => {
 			closed = true;
 			document.removeEventListener('visibilitychange', onVisibility);
 			if (reconnectTimer !== undefined) clearTimeout(reconnectTimer);
-			if (rotateTimer !== undefined) clearInterval(rotateTimer);
 			const s = socket;
 			socket = null;
 			s?.close(1000, 'component destroyed');
@@ -163,249 +185,214 @@
 </script>
 
 {#if browser && visible}
-	<aside class="np" class:idle={!nowPlaying} aria-label="What Anandhu is listening to">
-		<!-- polite + atomic: a track change is announced once, calmly, and never
-		     interrupts whatever the visitor is already reading. -->
-		<div class="np-live" aria-live="polite" aria-atomic="true">
-			{#if nowPlaying}
-				Anandhu is now listening to {track?.title}{track?.artist ? ` by ${track.artist}` : ''}
-			{:else}
-				Anandhu isn't playing any music. {idleLine}
+	<svelte:element
+		this={playing && shown?.url ? 'a' : 'div'}
+		class="np"
+		class:idle={!playing}
+		href={playing && shown?.url ? shown.url : undefined}
+		target={playing && shown?.url ? '_blank' : undefined}
+		rel={playing && shown?.url ? 'noopener noreferrer' : undefined}
+		aria-label={shown?.title
+			? `${playing ? 'Now listening' : 'Last played'}: ${shown.title}${shown.artist ? ` by ${shown.artist}` : ''}`
+			: `Nothing playing. ${joke}`}
+	>
+		<span class="art">
+			{#if shown?.artwork}
+				<img src={shown.artwork} alt="" width="56" height="56" loading="lazy" />
 			{/if}
-		</div>
+			<span class="eq" aria-hidden="true">
+				<i style="--dur: 0.9s; --delay: 0s"></i>
+				<i style="--dur: 0.7s; --delay: -0.3s"></i>
+				<i style="--dur: 1.1s; --delay: -0.6s"></i>
+			</span>
+		</span>
 
-		<div class="np-body" aria-hidden="true">
-			{#if nowPlaying}
-				<div class="art">
-					{#if track?.artwork}
-						<img src={track.artwork} alt="" width="48" height="48" loading="lazy" />
-					{:else}
-						<div class="art-fallback">♪</div>
-					{/if}
-					<span class="bars"><i></i><i></i><i></i></span>
-				</div>
-
-				<div class="meta">
-					<span class="label">Anandhu is now listening</span>
-					<span class="title">{track?.title}</span>
-					{#if track?.artist}<span class="artist">{track.artist}</span>{/if}
-				</div>
-
-				{#if track?.url}
-					<a
-						class="open"
-						href={track.url}
-						target="_blank"
-						rel="noopener noreferrer"
-						aria-hidden="false"
-						aria-label="Open this track on YouTube Music"
-					>
-						↗
-					</a>
-				{/if}
+		<span class="text">
+			<span class="label mono">
+				<span class="long">{playing ? 'Anandhu is ' : ''}</span>{label}
+			</span>
+			{#if shown?.title}
+				<span class="title">{shown.title}</span>
+				{#if shown.artist}<span class="artist">{shown.artist}</span>{/if}
 			{:else}
-				<div class="art">
-					<div class="art-fallback quiet">◌</div>
-				</div>
-				<div class="meta">
-					<span class="label">Anandhu isn't playing any music</span>
-					<span class="idle-line">{idleLine}</span>
-				</div>
+				<span class="title joke">{joke}</span>
 			{/if}
-		</div>
-	</aside>
+		</span>
+
+		{#if playing && shown?.url}
+			<span class="go" aria-hidden="true">↗</span>
+		{/if}
+	</svelte:element>
 {/if}
 
 <style>
 	.np {
 		position: fixed;
-		left: var(--gutter);
-		bottom: 1.25rem;
-		z-index: 50;
-		max-width: min(22rem, calc(100vw - var(--gutter) * 2));
-		/* Opaque: the WebGL canvas sits behind this and backdrop-filter cannot
-		   reach it through the .shell stacking context. */
-		background: rgba(9, 9, 12, 0.94);
+		z-index: 5;
+		right: 12px;
+		bottom: 12px;
+		left: 12px;
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		padding: 10px 16px 10px 10px;
 		border: 1px solid var(--line);
-		border-radius: 2px;
-		box-shadow: 0 18px 50px -18px rgba(0, 0, 0, 0.95);
-		animation: npIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+		border-radius: 14px;
+		background: var(--card);
+		color: var(--fg);
+		box-shadow: 0 18px 40px -18px rgba(0, 0, 0, 0.45);
+		transition:
+			background 0.8s ease,
+			border-color 0.8s ease,
+			color 0.8s ease;
 	}
 
-	@keyframes npIn {
-		from {
-			opacity: 0;
-			transform: translateY(14px);
+	@media (min-width: 900px) {
+		.np {
+			right: auto;
+			bottom: 24px;
+			left: 24px;
+			width: 380px;
+			gap: 14px;
+			padding: 12px 16px 12px 12px;
+			border-radius: 16px;
 		}
 	}
 
-	/* Screen-reader-only live region. */
-	.np-live {
-		position: absolute;
-		width: 1px;
-		height: 1px;
-		margin: -1px;
-		padding: 0;
-		overflow: hidden;
-		clip: rect(0 0 0 0);
-		white-space: nowrap;
-		border: 0;
-	}
-
-	.np-body {
-		display: flex;
-		align-items: center;
-		gap: 0.85rem;
-		padding: 0.7rem 0.8rem;
-	}
-
+	/* ---- artwork + equaliser ---- */
 	.art {
 		position: relative;
 		flex-shrink: 0;
-		width: 3rem;
-		height: 3rem;
+		width: 44px;
+		height: 44px;
+		overflow: hidden;
+		border-radius: 8px;
+		background: var(--line);
+		transition: background 0.8s ease;
+	}
+
+	@media (min-width: 900px) {
+		.art {
+			width: 56px;
+			height: 56px;
+		}
 	}
 
 	.art img {
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
-		border-radius: 2px;
-		display: block;
 	}
 
-	.art-fallback {
-		display: grid;
-		place-items: center;
-		width: 100%;
-		height: 100%;
-		border: 1px solid var(--line);
-		border-radius: 2px;
-		color: #2bf5c0;
-		font-size: 1.1rem;
-	}
-
-	.art-fallback.quiet {
-		color: #83838e;
-	}
-
-	/* Three little equaliser bars over the corner of the artwork. */
-	.bars {
+	.eq {
 		position: absolute;
-		right: -3px;
-		bottom: -3px;
+		bottom: 6px;
+		left: 6px;
 		display: flex;
+		height: 14px;
 		align-items: flex-end;
 		gap: 2px;
-		height: 12px;
-		padding: 2px 3px;
-		background: #09090c;
-		border-radius: 2px;
 	}
 
-	.bars i {
+	.eq i {
 		display: block;
-		width: 2px;
-		height: 4px;
-		background: #2bf5c0;
-		animation: bounce 1s ease-in-out infinite;
+		width: 3px;
+		height: 14px;
+		background: var(--accent);
+		transform-origin: bottom;
+		animation: eq var(--dur) ease-in-out var(--delay) infinite alternate;
+		transition: background 0.8s ease;
 	}
 
-	.bars i:nth-child(2) {
-		animation-delay: 0.18s;
-	}
-	.bars i:nth-child(3) {
-		animation-delay: 0.36s;
-	}
-
-	@keyframes bounce {
-		0%,
-		100% {
-			height: 3px;
+	@keyframes eq {
+		from {
+			transform: scaleY(0.25);
 		}
-		50% {
-			height: 9px;
+		to {
+			transform: scaleY(1);
 		}
 	}
 
-	.meta {
+	/* Idle: the bars stay, but they stop moving. */
+	.idle .eq i {
+		animation: none;
+		transform: scaleY(0.35);
+	}
+
+	/* ---- text ---- */
+	.text {
 		display: flex;
-		flex-direction: column;
-		gap: 0.15rem;
 		min-width: 0;
+		flex-grow: 1;
+		flex-direction: column;
+		gap: 2px;
+	}
+
+	@media (min-width: 900px) {
+		.text {
+			gap: 3px;
+		}
 	}
 
 	.label {
-		font-family: 'JetBrains Mono Variable', ui-monospace, monospace;
-		font-size: 0.5625rem;
-		letter-spacing: 0.16em;
+		font-size: 11px;
+		letter-spacing: 0.1em;
 		text-transform: uppercase;
-		color: #83838e;
-		/* These labels are long enough to wrap in a narrow card, and the global
-		   .label rule sets line-height: 1, which would collide the two lines. */
-		line-height: 1.45;
+		color: var(--muted);
+	}
+
+	/* "Anandhu is now listening" is too wide for a phone; "Now listening" is not. */
+	.long {
+		display: none;
+	}
+
+	@media (min-width: 900px) {
+		.long {
+			display: inline;
+		}
 	}
 
 	.title,
-	.artist,
-	.idle-line {
+	.artist {
 		overflow: hidden;
-		text-overflow: ellipsis;
 		white-space: nowrap;
+		text-overflow: ellipsis;
 	}
 
 	.title {
-		font-size: 0.875rem;
+		font-size: 15px;
 		font-weight: 500;
-		letter-spacing: -0.01em;
-		color: #f0f0f2;
 	}
 
 	.artist {
-		font-size: 0.75rem;
-		color: #94949e;
+		font-size: 13px;
+		color: var(--muted);
 	}
 
-	.idle-line {
-		font-size: 0.8125rem;
-		color: #94949e;
+	@media (min-width: 900px) {
+		.title {
+			font-size: 16px;
+		}
+		.artist {
+			font-size: 14px;
+		}
 	}
 
-	/* The only control on the card. There is deliberately no dismiss button:
-	   it was a single click away from hiding the card for the rest of the
-	   session, with nothing on screen to explain where it had gone. */
-	.open {
+	.idle .title,
+	.idle .artist {
+		color: var(--muted);
+	}
+
+	/* A whole sentence, not a track title: wrapping beats an ellipsis. */
+	.joke {
+		white-space: normal;
+		font-weight: 400;
+		line-height: 1.35;
+	}
+
+	.go {
 		flex-shrink: 0;
-		margin-left: auto;
-		padding: 0.25rem;
-		font-size: 0.9rem;
-		line-height: 1;
-		color: #83838e;
-		text-decoration: none;
-		transition: color 0.3s ease;
-	}
-
-	.open:hover {
-		color: #2bf5c0;
-	}
-
-	/* On phones the card spans the gutter and sits above the safe area. */
-	@media (max-width: 640px) {
-		.np {
-			left: var(--gutter);
-			right: var(--gutter);
-			bottom: max(0.75rem, env(safe-area-inset-bottom));
-			max-width: none;
-		}
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.np {
-			animation: none;
-		}
-		.bars i {
-			animation: none;
-			height: 6px;
-		}
+		font-size: 16px;
+		color: var(--muted);
 	}
 </style>

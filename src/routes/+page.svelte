@@ -1,846 +1,516 @@
 <script lang="ts">
-	import { reveal, magnetic, tilt, scramble } from '$lib/actions';
-	import { projects, stackIcons, sideProjects } from '$lib/data/projects';
+	import SiteHeader from '$lib/components/SiteHeader.svelte';
+	import { kerala } from '$lib/kerala.svelte';
+	import { crafts, projects } from '$lib/data/projects';
+
+	/** How many projects show before "Show all". */
+	const VISIBLE = 5;
+
+	let showAll = $state(false);
+
+	// With five projects and five slots there is nothing to expand, so the
+	// button is not rendered at all. Add a sixth project and it returns.
+	const expandable = projects.length > VISIBLE;
+	const shown = $derived(showAll || !expandable ? projects : projects.slice(0, VISIBLE));
 
 	const schema = {
 		'@context': 'https://schema.org',
 		'@type': 'Person',
 		name: 'Anandhu Remanan',
 		url: 'https://imanandhu.in',
-		image: 'https://imanandhu.in/hero.webp',
 		jobTitle: 'Software Engineer',
+		address: { '@type': 'PostalAddress', addressRegion: 'Kerala', addressCountry: 'IN' },
 		sameAs: [
 			'https://github.com/anandhuremanan',
-			'https://twitter.com/anandhu_or',
-			'https://www.linkedin.com/in/anandhu-remanan/'
-		],
-		description:
-			'Software Engineer focused on clean UI, scalable systems, and thoughtful digital experiences.'
+			'https://www.linkedin.com/in/anandhuremanan/',
+			'https://twitter.com/anandhu_or'
+		]
 	};
-
-	// Split for the per-character hero reveal.
-	const line1 = 'ANANDHU'.split('');
-	const line2 = 'REMANAN'.split('');
-
-	const ticker = [
-		'SOFTWARE ENGINEER',
-		'KERALA, INDIA',
-		'FULL-STACK',
-		'SYSTEMS + INTERFACE',
-		'OPEN TO WORK'
-	];
 </script>
 
 <svelte:head>
 	<title>Anandhu Remanan — Software Engineer</title>
-	<meta
-		name="description"
-		content="Portfolio of Anandhu Remanan, a Software Engineer from Kerala, India. Engineering meets creativity."
-	/>
 	{@html `<script type="application/ld+json">${JSON.stringify(schema)}</script>`}
 </svelte:head>
 
-<!-- ============================================================
-     01 — HERO
-     ============================================================ -->
-<section class="hero">
-	<div class="hero-top">
-		<span class="label label-accent">[ 001 / INDEX ]</span>
-		<span class="label">KERALA, IN · UTC+5:30</span>
+<div class="page">
+	<SiteHeader />
+
+	<!-- Hero: the clock is the whole point of the page. -->
+	<section class="hero">
+		<p class="lead">It's</p>
+		<div class="clock">{kerala.clock}</div>
+		<p class="says">
+			in Kerala, so I'm probably <span class="accent"
+				>{kerala.doing.pre}{#if kerala.doing.link}{#if kerala.doing.href}<a
+							class="ul"
+							href={kerala.doing.href}
+							target="_blank"
+							rel="noopener noreferrer">{kerala.doing.link}</a
+						>{:else}{kerala.doing.link}{/if}{/if}{kerala.doing.post}</span
+			>
+		</p>
+	</section>
+
+	<!-- Scrub: preview any hour of the day, theme and all. -->
+	<div class="scrub meta">
+		<label for="scrub">Scrub the day</label>
+		<input
+			id="scrub"
+			type="range"
+			min="0"
+			max="1439"
+			step="15"
+			value={kerala.minutes}
+			oninput={(e) => (kerala.scrub = Number(e.currentTarget.value))}
+		/>
+		{#if kerala.scrubbing}
+			<button type="button" class="pill pill-quiet back" onclick={() => kerala.reset()}>
+				Back to now
+			</button>
+		{/if}
 	</div>
 
-	<!-- aria-label keeps screen readers from spelling out the split glyphs. -->
-	<h1 class="display fluid-xl name" aria-label="Anandhu Remanan">
-		<span class="line">
-			{#each line1 as ch, i (i)}
-				<span class="ch" style="--d: {i * 45}ms">{ch}</span>
-			{/each}
-		</span>
-		<span class="line">
-			{#each line2 as ch, i (i)}
-				<span class="ch" style="--d: {(i + line1.length) * 45}ms">{ch}</span>
-			{/each}<span class="reg">®</span>
-		</span>
-	</h1>
-
-	<div class="hero-bottom">
-		<div class="hero-role">
-			<span class="label">Role</span>
-			<p>Software&nbsp;Engineer</p>
+	<!-- Work -->
+	<section id="work" class="work">
+		<div class="sec-head meta">
+			<span>What I've shipped · {projects.length} projects</span>
+			<a class="tap" href="/case-studies">Full archive →</a>
 		</div>
 
-		<div class="hero-blurb">
-			<div class="hero-rule" use:reveal={{ rule: true, delay: 600 }}></div>
-			<p use:reveal={{ delay: 700 }}>
-				My work sits between engineering and creativity. Simple, functional, and intentional. No
-				unnecessary layers, no bullshit.
-			</p>
-		</div>
-
-		<div class="hero-stats" use:reveal={{ delay: 800 }}>
-			<div class="stat">
-				<span class="num">4+</span>
-				<span class="label">Years</span>
-			</div>
-			<div class="stat">
-				<span class="num">30+</span>
-				<span class="label">Projects</span>
-			</div>
-		</div>
-	</div>
-
-	<a href="#about" class="scroll-cue" aria-label="Scroll to about">
-		<span class="label">Scroll</span>
-		<span class="cue-line"></span>
-	</a>
-</section>
-
-<!-- ============================================================
-     TICKER
-     ============================================================ -->
-<div class="ticker" aria-hidden="true">
-	<div class="ticker-track">
-		{#each [0, 1] as pass (pass)}
-			{#each ticker as item (item + pass)}
-				<span class="ticker-item mono">{item}</span>
-				<span class="ticker-dot">◆</span>
-			{/each}
+		{#each shown as p (p.id)}
+			<a class="row" href="/case-studies#{p.id}">
+				<span class="row-name">{p.name}</span>
+				<span class="row-desc">{p.blurb}</span>
+				<span class="row-year mono">{p.year}</span>
+			</a>
 		{/each}
+
+		{#if expandable}
+			<div class="more">
+				<button
+					type="button"
+					class="pill"
+					aria-expanded={showAll}
+					onclick={() => (showAll = !showAll)}
+				>
+					{showAll ? 'Show latest only' : `Show all ${projects.length}`}
+				</button>
+			</div>
+		{/if}
+	</section>
+
+	<!-- After hours -->
+	<section id="after-hours" class="after">
+		<div class="after-head">
+			<h2 class="h2">After hours</h2>
+			<span class="meta when">When the laptop closes</span>
+		</div>
+
+		<div class="cards">
+			{#each crafts as c (c.key)}
+				{@const on = c.key === kerala.craft}
+				<svelte:element
+					this={c.href ? 'a' : 'div'}
+					class="card"
+					class:on
+					href={c.href ?? undefined}
+					target={c.href ? '_blank' : undefined}
+					rel={c.href ? 'noopener noreferrer' : undefined}
+				>
+					<span class="card-top mono">
+						<span>{c.hours}</span>
+						{#if on}<span>● happening now</span>{/if}
+					</span>
+					<span class="card-name"
+						>{c.name}{#if c.href}&nbsp;↗{/if}</span
+					>
+					<span class="card-line">{c.line}</span>
+				</svelte:element>
+			{/each}
+		</div>
+	</section>
+
+	<!-- Wrapper takes the `auto`; the footer's own margin guarantees the gap. -->
+	<div class="foot-wrap">
+		<footer class="foot">
+			<!-- The site deliberately does not publish an email address. -->
+			<a class="cta" href="/contact">Send a message →</a>
+			<span class="socials mono">
+				<a
+					class="tap"
+					href="https://github.com/anandhuremanan"
+					target="_blank"
+					rel="noopener noreferrer">GitHub</a
+				>
+				<a
+					class="tap"
+					href="https://www.linkedin.com/in/anandhuremanan/"
+					target="_blank"
+					rel="noopener noreferrer">LinkedIn</a
+				>
+				<a
+					class="tap"
+					href="https://twitter.com/anandhu_or"
+					target="_blank"
+					rel="noopener noreferrer">X</a
+				>
+			</span>
+		</footer>
 	</div>
 </div>
 
-<!-- ============================================================
-     02 — ABOUT
-     ============================================================ -->
-<section id="about" class="section">
-	<header class="sec-head">
-		<span class="label label-accent">[ 002 / ABOUT ]</span>
-		<div class="sec-rule" use:reveal={{ rule: true }}></div>
-	</header>
-
-	<div class="about">
-		<figure class="portrait" use:reveal use:tilt={{ max: 5 }}>
-			<img
-				src="/hero.webp"
-				alt="Portrait of Anandhu Remanan"
-				width="480"
-				height="480"
-				loading="eager"
-				fetchpriority="high"
-			/>
-			<figcaption class="label">FIG. 01 — OPERATOR</figcaption>
-		</figure>
-
-		<div class="about-body">
-			<h2 class="display fluid-md" use:reveal={{ delay: 80 }}>
-				Hi, I'm Anandhu.<br />
-				<span class="muted">I build things that hold up.</span>
-			</h2>
-
-			<p use:reveal={{ delay: 160 }}>
-				A Software Engineer from Kerala, India. I work across the stack — interfaces that feel
-				deliberate, and the systems underneath that keep them honest. Four years in, roughly thirty
-				projects shipped.
-			</p>
-
-			<dl class="meta" use:reveal={{ delay: 240 }}>
-				<div>
-					<dt class="label">Based</dt>
-					<dd>Kerala, India</dd>
-				</div>
-				<div>
-					<dt class="label">Focus</dt>
-					<dd>Interface + Systems</dd>
-				</div>
-				<div>
-					<dt class="label">Status</dt>
-					<dd class="accent">Open to work</dd>
-				</div>
-			</dl>
-		</div>
-	</div>
-</section>
-
-<!-- ============================================================
-     03 — SELECTED WORK
-     ============================================================ -->
-<section class="section">
-	<header class="sec-head">
-		<span class="label label-accent">[ 003 / SELECTED WORK ]</span>
-		<div class="sec-rule" use:reveal={{ rule: true }}></div>
-	</header>
-
-	<ul class="work">
-		{#each projects as p, i (p.id)}
-			<li use:reveal={{ delay: i * 90 }}>
-				<a class="work-row" href="/case-studies#{p.id}" style="--accent: {p.accent}">
-					<span class="work-n mono">{p.index}</span>
-					<span class="work-name display" use:scramble>{p.name}</span>
-					<span class="work-sum">{p.summary}</span>
-					<span class="work-year mono">{p.year}</span>
-					<span class="work-arrow" aria-hidden="true">↗</span>
-				</a>
-			</li>
-		{/each}
-	</ul>
-
-	<a class="ghost-btn" href="/case-studies" use:magnetic={{ strength: 0.22 }}>
-		Read the case studies
-		<span aria-hidden="true">→</span>
-	</a>
-</section>
-
-<!-- ============================================================
-     04 — STACK
-     ============================================================ -->
-<section class="section">
-	<header class="sec-head">
-		<span class="label label-accent">[ 004 / STACK ]</span>
-		<div class="sec-rule" use:reveal={{ rule: true }}></div>
-	</header>
-
-	<ul class="stack">
-		{#each stackIcons as tool, i (tool.label)}
-			<li class="stack-cell ticks" use:reveal={{ delay: i * 45 }}>
-				<img
-					src={tool.src}
-					alt=""
-					class:invert={tool.invert}
-					width="48"
-					height="48"
-					loading="lazy"
-				/>
-				<span class="label">{tool.label}</span>
-			</li>
-		{/each}
-	</ul>
-</section>
-
-<!-- ============================================================
-     05 — BESIDE ENGINEERING
-     ============================================================ -->
-<section class="section">
-	<header class="sec-head">
-		<span class="label label-accent">[ 005 / BESIDE ENGINEERING ]</span>
-		<div class="sec-rule" use:reveal={{ rule: true }}></div>
-	</header>
-
-	<div class="beside">
-		{#each sideProjects as item, i (item.label)}
-			{#if item.href}
-				<a
-					class="beside-card panel ticks"
-					href={item.href}
-					rel="noopener noreferrer"
-					use:reveal={{ delay: i * 90 }}
-					use:tilt={{ max: 8 }}
-				>
-					<img src={item.img} alt="" width="120" height="120" loading="lazy" />
-					<div class="beside-meta">
-						<span class="beside-label">{item.label}</span>
-						<span class="label">{item.note}</span>
-					</div>
-					<span class="beside-arrow" aria-hidden="true">↗</span>
-				</a>
-			{:else}
-				<div
-					class="beside-card panel ticks quiet"
-					use:reveal={{ delay: i * 90 }}
-					use:tilt={{ max: 8 }}
-				>
-					<img src={item.img} alt="" width="120" height="120" loading="lazy" />
-					<div class="beside-meta">
-						<span class="beside-label">{item.label}</span>
-						<span class="label">{item.note}</span>
-					</div>
-				</div>
-			{/if}
-		{/each}
-	</div>
-</section>
-
-<!-- ============================================================
-     06 — CTA
-     ============================================================ -->
-<section class="section cta">
-	<span class="label label-accent" use:reveal>[ 006 / CONTACT ]</span>
-	<a class="cta-link display fluid-lg" href="/contact" use:reveal={{ delay: 80 }}>
-		Let's build<br />something sharp.
-	</a>
-	<p class="label" use:reveal={{ delay: 160 }}>Open to work · Kerala, India · Remote</p>
-</section>
-
 <style>
-	/* ---------------------------------------------------------- HERO */
+	/* ---------------------------------------------------------- hero */
 	.hero {
-		position: relative;
-		min-height: 100svh;
 		display: flex;
 		flex-direction: column;
-		justify-content: space-between;
-		padding: calc(var(--nav-h) + 2rem) var(--gutter) 2.5rem;
-	}
-
-	.hero-top {
-		display: flex;
-		justify-content: space-between;
-		gap: 1rem;
-	}
-
-	.name {
-		margin: auto 0;
-		padding: 2rem 0;
-		text-transform: uppercase;
-	}
-
-	.line {
-		display: block;
-		white-space: nowrap;
-	}
-
-	/* Each glyph rises and unblurs on its own beat. */
-	.ch {
-		display: inline-block;
-		animation: chIn 1.1s cubic-bezier(0.16, 1, 0.3, 1) both;
-		animation-delay: calc(var(--d) + 1500ms);
-	}
-
-	@keyframes chIn {
-		from {
-			opacity: 0;
-			transform: translateY(0.35em) rotateX(-55deg);
-			filter: blur(10px);
-		}
-	}
-
-	.reg {
-		display: inline-block;
-		font-size: 0.18em;
-		vertical-align: super;
-		color: #2bf5c0;
-		margin-left: 0.15em;
-		animation: chIn 1.1s cubic-bezier(0.16, 1, 0.3, 1) both;
-		animation-delay: 2.2s;
-	}
-
-	.hero-bottom {
-		display: grid;
-		grid-template-columns: 1fr;
-		gap: 2rem;
-		align-items: end;
+		gap: 8px;
+		margin-top: 64px;
 	}
 
 	@media (min-width: 900px) {
-		.hero-bottom {
-			grid-template-columns: auto 1fr auto;
-			gap: 3rem;
+		.hero {
+			gap: 12px;
+			margin-top: 120px;
 		}
 	}
 
-	.hero-role p {
-		font-size: 1rem;
-		margin: 0.5rem 0 0;
+	.lead {
+		font-size: 18px;
+		color: var(--muted);
 	}
 
-	.hero-blurb {
-		max-width: 34rem;
-	}
-
-	.hero-rule {
-		height: 1px;
-		background: rgba(255, 255, 255, 0.18);
-		margin-bottom: 1rem;
-	}
-
-	.hero-blurb p {
-		margin: 0;
-		font-size: 0.9375rem;
-		line-height: 1.65;
-		color: #94949e;
-	}
-
-	.hero-stats {
-		display: flex;
-		gap: 2.5rem;
-	}
-
-	.stat {
-		display: flex;
-		flex-direction: column;
-		gap: 0.4rem;
-	}
-
-	.num {
-		font-size: 2rem;
+	.says {
+		max-width: 1000px;
+		margin-top: 12px;
+		font-size: 28px;
 		font-weight: 500;
-		letter-spacing: -0.03em;
-		line-height: 1;
-	}
-
-	.scroll-cue {
-		position: absolute;
-		left: 50%;
-		bottom: 1.5rem;
-		transform: translateX(-50%);
-		display: none;
-		flex-direction: column;
-		align-items: center;
-		gap: 0.6rem;
-		text-decoration: none;
-	}
-
-	@media (min-width: 1100px) {
-		.scroll-cue {
-			display: flex;
-		}
-	}
-
-	.cue-line {
-		width: 1px;
-		height: 44px;
-		background: linear-gradient(to bottom, #2bf5c0, transparent);
-		animation: cue 2.2s ease-in-out infinite;
-		transform-origin: top;
-	}
-
-	@keyframes cue {
-		0%,
-		100% {
-			transform: scaleY(0.35);
-			opacity: 0.4;
-		}
-		50% {
-			transform: scaleY(1);
-			opacity: 1;
-		}
-	}
-
-	/* ---------------------------------------------------------- TICKER */
-	.ticker {
-		position: relative;
-		z-index: 10;
-		overflow: hidden;
-		border-top: 1px solid var(--line);
-		border-bottom: 1px solid var(--line);
-		padding: 0.85rem 0;
-		background: rgba(5, 5, 6, 0.4);
-		backdrop-filter: blur(6px);
-		-webkit-backdrop-filter: blur(6px);
-	}
-
-	.ticker-track {
-		display: flex;
-		align-items: center;
-		gap: 2rem;
-		width: max-content;
-		animation: slide 38s linear infinite;
-	}
-
-	@keyframes slide {
-		to {
-			transform: translateX(-50%);
-		}
-	}
-
-	.ticker-item {
-		font-size: 0.6875rem;
-		letter-spacing: 0.22em;
-		color: #94949e;
-		white-space: nowrap;
-	}
-
-	.ticker-dot {
-		font-size: 0.4rem;
-		color: #2bf5c0;
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.ticker-track {
-			animation: none;
-		}
-		.cue-line {
-			animation: none;
-		}
-		.ch,
-		.reg {
-			animation: none;
-			opacity: 1;
-		}
-	}
-
-	/* ---------------------------------------------------------- SECTIONS */
-	.section {
-		padding: 7rem var(--gutter);
+		line-height: 1.25;
+		letter-spacing: -0.02em;
 	}
 
 	@media (min-width: 900px) {
-		.section {
-			padding: 9rem var(--gutter);
+		.lead {
+			font-size: 26px;
+		}
+		.says {
+			margin-top: 16px;
+			font-size: 44px;
+			line-height: 1.2;
+		}
+	}
+
+	.accent {
+		color: var(--accent);
+	}
+
+	/* ---------------------------------------------------------- scrub */
+	.scrub {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		margin-top: 36px;
+	}
+
+	@media (min-width: 900px) {
+		.scrub {
+			flex-direction: row;
+			align-items: center;
+			gap: 20px;
+			margin-top: 56px;
+		}
+	}
+
+	.scrub input {
+		width: 100%;
+		height: 44px;
+		margin: 0;
+		accent-color: var(--fg);
+	}
+
+	@media (min-width: 900px) {
+		.scrub input {
+			width: 420px;
+			height: auto;
+		}
+	}
+
+	.back {
+		align-self: flex-start;
+	}
+
+	/* ---------------------------------------------------------- work */
+	.work {
+		display: flex;
+		flex-direction: column;
+		margin-top: 72px;
+	}
+
+	@media (min-width: 900px) {
+		.work {
+			margin-top: 128px;
 		}
 	}
 
 	.sec-head {
 		display: flex;
-		align-items: center;
-		gap: 1.5rem;
-		margin-bottom: 3.5rem;
-	}
-
-	.sec-rule {
-		flex: 1;
-		height: 1px;
-		background: var(--line);
-	}
-
-	/* ---------------------------------------------------------- ABOUT */
-	.about {
-		display: grid;
-		grid-template-columns: 1fr;
-		gap: 3rem;
-	}
-
-	@media (min-width: 900px) {
-		.about {
-			grid-template-columns: minmax(0, 20rem) minmax(0, 1fr);
-			gap: 4.5rem;
-			align-items: start;
-		}
-	}
-
-	.portrait {
-		position: relative;
-		margin: 0;
-		border: 1px solid var(--line);
-		padding: 0.6rem;
-		max-width: 22rem;
-	}
-
-	.portrait img {
-		display: block;
-		width: 100%;
-		height: auto;
-		aspect-ratio: 1;
-		object-fit: cover;
-		filter: grayscale(1) contrast(1.12) brightness(0.88);
-		transition: filter 0.7s var(--ease-out-expo);
-	}
-
-	.portrait:hover img {
-		filter: grayscale(0) contrast(1) brightness(1);
-	}
-
-	.portrait figcaption {
-		margin-top: 0.75rem;
-	}
-
-	.about-body {
-		display: flex;
-		flex-direction: column;
-		gap: 1.75rem;
-	}
-
-	.about-body h2 {
-		margin: 0;
-	}
-
-	.muted {
-		color: #83838e;
-	}
-
-	.about-body p {
-		margin: 0;
-		max-width: 40rem;
-		font-size: 1rem;
-		line-height: 1.7;
-		color: #94949e;
-	}
-
-	.meta {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
-		gap: 1.5rem;
-		margin: 0;
-		padding-top: 1.75rem;
-		border-top: 1px solid var(--line);
-	}
-
-	.meta dd {
-		margin: 0.5rem 0 0;
-		font-size: 0.9375rem;
-	}
-
-	.accent {
-		color: #2bf5c0;
-	}
-
-	/* ---------------------------------------------------------- WORK */
-	.work {
-		border-top: 1px solid var(--line);
-	}
-
-	.work-row {
-		position: relative;
-		display: grid;
-		grid-template-columns: auto 1fr auto;
-		grid-template-areas:
-			'n name arrow'
-			'. sum .'
-			'. year .';
-		gap: 0.35rem 1.25rem;
 		align-items: baseline;
-		padding: 1.75rem 0;
-		border-bottom: 1px solid var(--line);
-		text-decoration: none;
-		color: inherit;
-		transition: padding-left 0.6s var(--ease-out-expo);
+		justify-content: space-between;
+		gap: 16px;
+		padding-bottom: 12px;
 	}
 
 	@media (min-width: 900px) {
-		.work-row {
-			grid-template-columns: 4rem minmax(0, 15rem) minmax(0, 1fr) 5rem 2rem;
-			grid-template-areas: 'n name sum year arrow';
-			gap: 2rem;
-			align-items: center;
-			padding: 2.25rem 0;
+		.sec-head {
+			padding-bottom: 16px;
 		}
 	}
 
-	/* A wash of the project's own accent sweeps in on hover. */
-	.work-row::before {
-		content: '';
-		position: absolute;
-		inset: 0;
-		background: linear-gradient(
-			90deg,
-			color-mix(in srgb, var(--accent) 9%, transparent),
-			transparent 55%
-		);
-		opacity: 0;
-		transition: opacity 0.5s ease;
-		pointer-events: none;
-	}
-
-	.work-row:hover::before {
-		opacity: 1;
-	}
-
-	.work-row:hover {
-		padding-left: 1.25rem;
-	}
-
-	.work-n {
-		grid-area: n;
-		font-size: 0.6875rem;
-		color: #83838e;
-		transition: color 0.4s ease;
-	}
-
-	.work-row:hover .work-n {
-		color: var(--accent);
-	}
-
-	.work-name {
-		grid-area: name;
-		font-size: clamp(1.5rem, 4vw, 2.25rem);
-		transition: color 0.4s ease;
-	}
-
-	.work-row:hover .work-name {
-		color: var(--accent);
-	}
-
-	.work-sum {
-		grid-area: sum;
-		font-size: 0.875rem;
-		line-height: 1.6;
-		color: #94949e;
-		display: -webkit-box;
-		-webkit-line-clamp: 2;
-		line-clamp: 2;
-		-webkit-box-orient: vertical;
-		overflow: hidden;
-	}
-
-	.work-year {
-		grid-area: year;
-		font-size: 0.6875rem;
-		color: #83838e;
-	}
-
-	.work-arrow {
-		grid-area: arrow;
-		font-size: 1.1rem;
-		color: #83838e;
-		transition:
-			transform 0.5s var(--ease-out-expo),
-			color 0.4s ease;
-	}
-
-	.work-row:hover .work-arrow {
-		color: var(--accent);
-		transform: translate(4px, -4px);
-	}
-
-	.ghost-btn {
+	.tap {
 		display: inline-flex;
 		align-items: center;
-		gap: 0.75rem;
-		margin-top: 2.75rem;
-		padding: 0.9rem 1.5rem;
-		border: 1px solid var(--line-2, rgba(255, 255, 255, 0.16));
-		font-family: 'JetBrains Mono Variable', monospace;
-		font-size: 0.6875rem;
-		letter-spacing: 0.16em;
-		text-transform: uppercase;
-		text-decoration: none;
-		color: #f0f0f2;
-		transition:
-			background 0.45s var(--ease-out-expo),
-			color 0.45s var(--ease-out-expo),
-			border-color 0.45s ease;
+		min-height: 44px;
 	}
 
-	.ghost-btn:hover {
-		background: #2bf5c0;
-		border-color: #2bf5c0;
-		color: #050506;
+	@media (min-width: 900px) {
+		.tap {
+			min-height: 0;
+		}
 	}
 
-	/* ---------------------------------------------------------- STACK */
-	.stack {
+	/* Stacked on a phone, three columns from 900px. */
+	.row {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
-		gap: 1px;
-		background: var(--line);
-		border: 1px solid var(--line);
+		grid-template-areas:
+			'name year'
+			'desc desc';
+		grid-template-columns: minmax(0, 1fr) auto;
+		gap: 4px 12px;
+		padding: 16px 0;
+		border-top: 1px solid var(--line);
+		transition: border-color 0.8s ease;
 	}
 
-	/* Deliberately not .panel: ten backdrop-filter layers stacked over the live
-	   WebGL canvas is a real frame-rate cost for no visual gain at this size. */
-	.stack-cell {
-		position: relative;
+	@media (min-width: 900px) {
+		.row {
+			grid-template-areas: 'name desc year';
+			grid-template-columns: 300px minmax(0, 1fr) 80px;
+			gap: 24px;
+			align-items: baseline;
+			padding: 20px 0;
+		}
+	}
+
+	.row-name {
+		grid-area: name;
+		font-size: 20px;
+		font-weight: 500;
+	}
+
+	.row-desc {
+		grid-area: desc;
+		font-size: 15px;
+		color: var(--muted);
+	}
+
+	.row-year {
+		grid-area: year;
+		font-size: 12px;
+		text-align: right;
+	}
+
+	@media (min-width: 900px) {
+		.row-name {
+			font-size: 24px;
+		}
+		.row-desc {
+			font-size: 16px;
+		}
+		.row-year {
+			font-size: 13px;
+		}
+	}
+
+	.more {
+		padding-top: 16px;
+		border-top: 1px solid var(--line);
+		transition: border-color 0.8s ease;
+	}
+
+	.more .pill {
+		width: 100%;
+	}
+
+	@media (min-width: 900px) {
+		.more {
+			padding-top: 20px;
+		}
+		.more .pill {
+			width: auto;
+		}
+	}
+
+	/* ---------------------------------------------------------- after hours */
+	.after {
 		display: flex;
 		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		gap: 0.9rem;
-		padding: 2rem 1rem;
-		background: rgba(8, 8, 10, 0.72);
-		aspect-ratio: 1;
-		transition: background 0.45s ease;
+		gap: 14px;
+		margin-top: 72px;
 	}
 
-	.stack-cell:hover {
-		background: rgba(43, 245, 192, 0.05);
+	@media (min-width: 900px) {
+		.after {
+			gap: 24px;
+			margin-top: 128px;
+		}
 	}
 
-	.stack-cell img {
-		width: 2.75rem;
-		height: 2.75rem;
-		object-fit: contain;
-		filter: grayscale(1) opacity(0.65);
-		transition:
-			filter 0.5s var(--ease-out-expo),
-			transform 0.5s var(--ease-out-expo);
-	}
-
-	.stack-cell:hover img {
-		filter: none;
-		transform: translateY(-4px) scale(1.06);
-	}
-
-	.stack-cell img.invert {
-		filter: grayscale(1) opacity(0.65) invert(1);
-	}
-
-	.stack-cell:hover img.invert {
-		filter: invert(1);
-	}
-
-	/* ---------------------------------------------------------- BESIDE */
-	.beside {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
-		gap: 1.25rem;
-	}
-
-	.beside-card {
-		position: relative;
+	.after-head {
 		display: flex;
-		flex-direction: column;
-		align-items: flex-start;
-		gap: 1.5rem;
-		padding: 2rem;
-		text-decoration: none;
-		color: inherit;
-		min-height: 15rem;
+		align-items: baseline;
 		justify-content: space-between;
-		/* Spotlight tracks the cursor via --mx/--my from the tilt action. */
-		background-image: radial-gradient(
-			22rem circle at var(--mx, 50%) var(--my, 50%),
-			rgba(43, 245, 192, 0.07),
-			transparent 60%
-		);
+		gap: 16px;
 	}
 
-	.beside-card img {
-		width: 4.5rem;
-		height: 4.5rem;
-		object-fit: contain;
-		transition: transform 0.6s var(--ease-out-expo);
+	.when {
+		display: none;
 	}
 
-	.beside-card:hover img {
-		transform: translateY(-6px) rotate(-6deg) scale(1.08);
+	@media (min-width: 900px) {
+		.when {
+			display: inline;
+		}
 	}
 
-	.beside-meta {
+	.cards {
+		display: grid;
+		gap: 14px;
+	}
+
+	@media (min-width: 900px) {
+		.cards {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			gap: 20px;
+		}
+	}
+
+	.card {
 		display: flex;
 		flex-direction: column;
-		gap: 0.5rem;
+		gap: 8px;
+		padding: 20px;
+		border: 1px solid var(--line);
+		border-radius: 14px;
+		background: var(--card);
+		color: var(--fg);
+		transition:
+			background 0.8s ease,
+			border-color 0.8s ease,
+			color 0.8s ease;
 	}
 
-	.beside-label {
-		font-size: 1.125rem;
+	@media (min-width: 900px) {
+		.card {
+			gap: 14px;
+			min-height: 240px;
+			padding: 28px;
+			border-radius: 16px;
+		}
+	}
+
+	/* The craft happening right now inverts. */
+	.card.on {
+		border-color: var(--fg);
+		background: var(--fg);
+		color: var(--bg);
+	}
+
+	.card-top {
+		display: flex;
+		justify-content: space-between;
+		gap: 12px;
+		font-size: 12px;
+	}
+
+	@media (min-width: 900px) {
+		.card-top {
+			font-size: 13px;
+		}
+	}
+
+	.card-name {
+		font-size: 28px;
 		font-weight: 500;
 		letter-spacing: -0.02em;
 	}
 
-	.beside-arrow {
-		position: absolute;
-		top: 1.5rem;
-		right: 1.5rem;
-		color: #83838e;
-		transition:
-			transform 0.5s var(--ease-out-expo),
-			color 0.4s ease;
+	@media (min-width: 900px) {
+		.card-name {
+			margin-top: auto;
+			font-size: 40px;
+		}
 	}
 
-	.beside-card:hover .beside-arrow {
-		color: #2bf5c0;
-		transform: translate(3px, -3px);
+	.card-line {
+		font-size: 15px;
+		line-height: 1.5;
+		opacity: 0.8;
 	}
 
-	.quiet {
-		opacity: 0.6;
+	@media (min-width: 900px) {
+		.card-line {
+			font-size: 16px;
+		}
 	}
 
-	/* ---------------------------------------------------------- CTA */
-	.cta {
+	/* ---------------------------------------------------------- footer */
+	.foot-wrap {
+		margin-top: auto;
+	}
+
+	.foot {
 		display: flex;
 		flex-direction: column;
-		align-items: center;
-		gap: 2rem;
-		text-align: center;
+		gap: 16px;
+		margin-top: 64px;
+		padding-top: 24px;
+		border-top: 1px solid var(--line);
+		transition: border-color 0.8s ease;
 	}
 
-	.cta-link {
-		text-decoration: none;
-		color: #f0f0f2;
-		transition: color 0.5s ease;
+	@media (min-width: 900px) {
+		.foot {
+			flex-direction: row;
+			align-items: flex-end;
+			justify-content: space-between;
+			margin-top: 128px;
+			padding-top: 0;
+			border-top: 0;
+		}
 	}
 
-	.cta-link:hover {
-		color: #2bf5c0;
+	.cta {
+		font-size: 26px;
+		font-weight: 500;
+		letter-spacing: -0.02em;
+	}
+
+	@media (min-width: 900px) {
+		.cta {
+			font-size: 40px;
+		}
+	}
+
+	.socials {
+		display: flex;
+		gap: 20px;
+		font-size: 13px;
+	}
+
+	@media (min-width: 900px) {
+		.socials {
+			gap: 24px;
+		}
 	}
 </style>

@@ -1,383 +1,390 @@
 <script lang="ts">
-	import { reveal, magnetic, scramble } from '$lib/actions';
-	import { socials } from '$lib/data/projects';
+	import SiteHeader from '$lib/components/SiteHeader.svelte';
+	import SiteFooter from '$lib/components/SiteFooter.svelte';
+	import { kerala } from '$lib/kerala.svelte';
+	import { socials, MUSIC_URL, STORIES_URL, PAINT_URL } from '$lib/data/projects';
 
+	/** The existing endpoint. Unchanged — messages keep arriving the same way. */
+	const FORMSPREE = 'https://formspree.io/f/xbddkkjy';
+
+	let name = $state('');
+	let email = $state('');
+	let message = $state('');
 	let sending = $state(false);
+	let sent = $state(false);
+	let failed = $state(false);
+	/** Kerala time at the moment it actually sent, so the receipt stays truthful. */
+	let sentAt = $state('');
+
+	const ready = $derived(
+		name.trim().length > 0 && /.+@.+\..+/.test(email.trim()) && message.trim().length > 0
+	);
+
+	async function submit(event: SubmitEvent) {
+		event.preventDefault();
+		if (!ready || sending) return;
+
+		sending = true;
+		failed = false;
+
+		try {
+			// Formspree returns JSON instead of redirecting when asked to, which is
+			// what lets the designed success state replace the form in place.
+			const res = await fetch(FORMSPREE, {
+				method: 'POST',
+				headers: { Accept: 'application/json' },
+				body: new FormData(event.currentTarget as HTMLFormElement)
+			});
+			if (!res.ok) throw new Error(String(res.status));
+			sentAt = kerala.clock;
+			sent = true;
+		} catch {
+			// Never pretend a message was delivered when it was not.
+			failed = true;
+		} finally {
+			sending = false;
+		}
+	}
+
+	function again() {
+		sent = false;
+		failed = false;
+		name = '';
+		email = '';
+		message = '';
+	}
+
+	const footerLinks = [
+		{ label: 'Music', href: MUSIC_URL },
+		{ label: 'Stories', href: STORIES_URL },
+		{ label: 'Paint', href: PAINT_URL }
+	];
 </script>
 
 <svelte:head>
 	<title>Contact — Anandhu Remanan</title>
 	<meta
 		name="description"
-		content="Get in touch with Anandhu Remanan. Connect via social media or send a message."
+		content="Open to work, remote friendly. Send a message and I'll usually reply within a day or two."
 	/>
 	<meta property="og:title" content="Contact — Anandhu Remanan" />
 	<meta
 		property="og:description"
-		content="Get in touch with Anandhu Remanan. Connect via social media or send a message."
+		content="Open to work, remote friendly. Send a message and I'll usually reply within a day or two."
 	/>
 </svelte:head>
 
-<header class="page-head">
-	<span class="label label-accent">[ 003 / CONTACT ]</span>
-	<h1 class="display fluid-lg" use:scramble={{ trigger: 'mount' }}>Let's Connect</h1>
-	<p>
-		I'm always open to discussing new projects, creative ideas, or opportunities to be part of your
-		visions. Feel free to reach out!
-	</p>
-	<div class="head-rule" use:reveal={{ rule: true, delay: 200 }}></div>
-</header>
+<div class="page">
+	<SiteHeader />
 
-<div class="grid">
-	<!-- Left: channels -->
-	<aside class="channels">
-		<div class="block" use:reveal>
-			<span class="label">Status</span>
-			<p class="status">
-				<i class="pip"></i>
-				Open to work
-			</p>
-			<span class="label">Kerala, India · Remote friendly</span>
+	<section class="intro">
+		<div class="status mono">
+			<span class="dot" aria-hidden="true"></span>Open to work · Remote friendly
 		</div>
-
-		<div class="block" use:reveal={{ delay: 80 }}>
-			<span class="label">Channels</span>
-			<ul class="socials">
-				{#each socials as s (s.href)}
-					<li>
-						<a href={s.href} target="_blank" rel="noopener noreferrer">
-							<span>{s.label}</span>
-							<span class="handle mono">{s.handle}</span>
-							<span class="arrow" aria-hidden="true">↗</span>
-						</a>
-					</li>
-				{/each}
-			</ul>
-		</div>
-
-		<div class="block" use:reveal={{ delay: 160 }}>
-			<span class="label">Response time</span>
-			<p class="dim">Usually within a day or two.</p>
-		</div>
-	</aside>
-
-	<!-- Right: form -->
-	<section class="form-wrap" use:reveal={{ delay: 120 }}>
-		<div class="form-head">
-			<span class="label">Send a message</span>
-			<span class="label mono">01 — 03</span>
-		</div>
-
-		<form
-			action="https://formspree.io/f/xbddkkjy"
-			method="POST"
-			class="form"
-			onsubmit={() => (sending = true)}
-		>
-			<div class="field">
-				<label for="name" class="label">01 — Name</label>
-				<input type="text" name="name" id="name" required placeholder="Your name" />
-			</div>
-
-			<div class="field">
-				<label for="email" class="label">02 — Email</label>
-				<input type="email" name="email" id="email" required placeholder="name@example.com" />
-			</div>
-
-			<div class="field">
-				<label for="message" class="label">03 — Message</label>
-				<textarea
-					name="message"
-					id="message"
-					rows="6"
-					required
-					placeholder="Whatever you want to say..."
-				></textarea>
-			</div>
-
-			<button type="submit" disabled={sending} use:magnetic={{ strength: 0.18 }}>
-				{sending ? 'Sending…' : 'Transmit'}
-				<span aria-hidden="true">→</span>
-			</button>
-
-			<p class="label foot">Powered by Formspree · No email revealed</p>
-		</form>
+		<h1 class="h1">Let's talk.</h1>
+		<p class="note">
+			It's <span class="mono">{kerala.clock}</span> in Kerala.
+			<span class="muted">{kerala.note}</span>
+		</p>
 	</section>
+
+	<section class="grid">
+		{#if sent}
+			<div class="done" role="status">
+				<span class="done-head">Sent at {sentAt} Kerala time.</span>
+				<span class="done-sub">I usually reply within a day or two.</span>
+				<button type="button" class="pill small" onclick={again}>Send another</button>
+			</div>
+		{:else}
+			<!-- action/method are kept so the form still works if the fetch path
+			     fails or JavaScript never runs; submit() intercepts otherwise. -->
+			<form class="form" action={FORMSPREE} method="POST" onsubmit={submit}>
+				<div class="field">
+					<label class="meta" for="c-name">Your name</label>
+					<input id="c-name" name="name" type="text" required bind:value={name} />
+				</div>
+
+				<div class="field">
+					<label class="meta" for="c-email">Your email</label>
+					<input id="c-email" name="email" type="email" required bind:value={email} />
+				</div>
+
+				<div class="field">
+					<label class="meta" for="c-msg">What are you working on?</label>
+					<textarea id="c-msg" name="message" rows="7" required bind:value={message}></textarea>
+				</div>
+
+				{#if failed}
+					<p class="error" role="alert">
+						That didn't send — the network or the form service refused it. Try again, or reach me on
+						one of the channels listed here.
+					</p>
+				{/if}
+
+				<div class="actions">
+					<button type="submit" class="send" class:ready disabled={!ready || sending}>
+						{sending ? 'Sending…' : 'Send message →'}
+					</button>
+					<span class="meta">Sent privately via Formspree</span>
+				</div>
+			</form>
+		{/if}
+
+		<aside class="channels">
+			<div class="block">
+				<span class="meta">Or find me on</span>
+				<div class="list">
+					{#each socials as c (c.href)}
+						<a class="channel" href={c.href} target="_blank" rel="noopener noreferrer">
+							<span class="channel-label">{c.label}</span>
+							<span class="meta">{c.handle} ↗</span>
+						</a>
+					{/each}
+				</div>
+			</div>
+
+			<div class="block">
+				<span class="meta">Response time</span>
+				<span class="reply">Usually within a day or two.</span>
+			</div>
+		</aside>
+	</section>
+
+	<SiteFooter links={footerLinks} />
 </div>
 
 <style>
-	.page-head {
+	/* ---------------------------------------------------------- intro */
+	.intro {
 		display: flex;
 		flex-direction: column;
-		gap: 1.25rem;
-		padding: calc(var(--nav-h) + 6rem) var(--gutter) 3rem;
+		gap: 14px;
+		margin-top: 56px;
 	}
 
-	.page-head h1 {
-		margin: 0;
+	@media (min-width: 900px) {
+		.intro {
+			gap: 20px;
+			margin-top: 112px;
+		}
 	}
 
-	.page-head p {
-		max-width: 34rem;
-		margin: 0;
-		font-size: 1rem;
-		line-height: 1.7;
-		color: #94949e;
+	.status {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		font-size: 13px;
 	}
 
-	.head-rule {
-		height: 1px;
-		background: var(--line);
-		margin-top: 1.5rem;
+	.dot {
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		background: var(--accent);
+		transition: background 0.8s ease;
 	}
 
+	.note {
+		max-width: 900px;
+		font-size: 20px;
+		line-height: 1.35;
+		letter-spacing: -0.01em;
+	}
+
+	@media (min-width: 900px) {
+		.note {
+			font-size: 28px;
+		}
+	}
+
+	.muted {
+		color: var(--muted);
+	}
+
+	/* ---------------------------------------------------------- layout */
 	.grid {
 		display: grid;
-		grid-template-columns: 1fr;
-		gap: 3.5rem;
-		padding: 2rem var(--gutter) 7rem;
+		gap: 48px;
+		margin-top: 48px;
 	}
 
 	@media (min-width: 900px) {
 		.grid {
-			grid-template-columns: minmax(0, 20rem) minmax(0, 1fr);
-			gap: 4.5rem;
+			grid-template-columns: minmax(0, 1fr) 400px;
+			gap: 112px;
 			align-items: start;
+			margin-top: 96px;
 		}
 	}
 
-	/* ---------------------------------------------------------- CHANNELS */
+	/* ---------------------------------------------------------- form */
+	.form {
+		display: flex;
+		flex-direction: column;
+		gap: 28px;
+	}
+
+	.field {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+	}
+
+	input,
+	textarea {
+		width: 100%;
+		padding: 0;
+		border: 0;
+		border-bottom: 1px solid var(--fg);
+		background: transparent;
+		font-size: 18px;
+		outline: none;
+		transition: border-color 0.8s ease;
+	}
+
+	input {
+		min-height: 52px;
+	}
+
+	textarea {
+		padding: 14px 0;
+		line-height: 1.5;
+		resize: vertical;
+	}
+
+	input:focus-visible,
+	textarea:focus-visible {
+		outline: none;
+		border-bottom-color: var(--accent);
+		border-bottom-width: 2px;
+		/* Compensate so the text does not shift when the border thickens. */
+		margin-bottom: -1px;
+	}
+
+	.actions {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 16px;
+	}
+
+	.send {
+		min-height: 52px;
+		padding: 0 28px;
+		border: 1px solid var(--fg);
+		border-radius: 999px;
+		background: transparent;
+		color: var(--muted);
+		font-size: 16px;
+		font-weight: 500;
+		transition:
+			background 0.2s ease,
+			color 0.2s ease,
+			border-color 0.8s ease;
+	}
+
+	/* Fills in only once every field is valid — the button itself is the hint. */
+	.send.ready:not(:disabled) {
+		background: var(--fg);
+		color: var(--bg);
+	}
+
+	.send:disabled {
+		cursor: not-allowed;
+	}
+
+	.error {
+		font-size: 15px;
+		line-height: 1.5;
+		color: var(--accent);
+	}
+
+	/* ---------------------------------------------------------- sent */
+	.done {
+		display: flex;
+		flex-direction: column;
+		gap: 16px;
+		padding: 24px;
+		border: 1px solid var(--line);
+		border-radius: 16px;
+		background: var(--card);
+		transition:
+			background 0.8s ease,
+			border-color 0.8s ease;
+	}
+
+	@media (min-width: 900px) {
+		.done {
+			padding: 32px;
+		}
+	}
+
+	.done-head {
+		font-size: 28px;
+		font-weight: 500;
+		letter-spacing: -0.02em;
+	}
+
+	@media (min-width: 900px) {
+		.done-head {
+			font-size: 36px;
+		}
+	}
+
+	.done-sub {
+		font-size: 17px;
+		line-height: 1.55;
+		color: var(--muted);
+	}
+
+	.small {
+		align-self: flex-start;
+		padding: 0 18px;
+		font-size: 14px;
+	}
+
+	/* ---------------------------------------------------------- channels */
 	.channels {
 		display: flex;
 		flex-direction: column;
-		gap: 2.5rem;
+		gap: 32px;
 	}
 
 	@media (min-width: 900px) {
 		.channels {
-			position: sticky;
-			top: calc(var(--nav-h) + 3rem);
+			gap: 40px;
 		}
 	}
 
 	.block {
 		display: flex;
 		flex-direction: column;
-		gap: 0.75rem;
+		gap: 8px;
 	}
 
-	.status {
+	.list {
+		display: flex;
+		flex-direction: column;
+		margin-top: 4px;
+	}
+
+	.channel {
 		display: flex;
 		align-items: center;
-		gap: 0.6rem;
-		margin: 0;
-		font-size: 1.125rem;
-		color: #2bf5c0;
-	}
-
-	.pip {
-		width: 6px;
-		height: 6px;
-		border-radius: 999px;
-		background: #2bf5c0;
-		box-shadow: 0 0 0 0 rgba(43, 245, 192, 0.55);
-		animation: ping 2.4s ease-out infinite;
-	}
-
-	@keyframes ping {
-		0% {
-			box-shadow: 0 0 0 0 rgba(43, 245, 192, 0.55);
-		}
-		70%,
-		100% {
-			box-shadow: 0 0 0 8px rgba(43, 245, 192, 0);
-		}
-	}
-
-	.dim {
-		margin: 0;
-		font-size: 0.9375rem;
-		color: #94949e;
-	}
-
-	.socials {
-		border-top: 1px solid var(--line);
-	}
-
-	.socials a {
-		display: grid;
-		grid-template-columns: 1fr auto;
-		gap: 0.2rem 0.75rem;
-		padding: 0.85rem 0;
-		border-bottom: 1px solid var(--line);
-		text-decoration: none;
-		color: #f0f0f2;
-		font-size: 0.9375rem;
-		transition:
-			color 0.35s ease,
-			padding-left 0.45s var(--ease-out-expo);
-	}
-
-	.socials a:hover {
-		color: #2bf5c0;
-		padding-left: 0.5rem;
-	}
-
-	.handle {
-		grid-column: 1;
-		font-size: 0.625rem;
-		color: #83838e;
-	}
-
-	.arrow {
-		grid-row: 1;
-		grid-column: 2;
-		color: #83838e;
-		transition:
-			transform 0.45s var(--ease-out-expo),
-			color 0.35s ease;
-	}
-
-	.socials a:hover .arrow {
-		color: #2bf5c0;
-		transform: translate(3px, -3px);
-	}
-
-	/* ---------------------------------------------------------- FORM */
-	/* Opaque on purpose: the particle field sits directly behind this card and
-	   backdrop-filter cannot reach it (see the note in layout.css), so contrast
-	   has to come from the surface itself. */
-	.form-wrap {
-		border: 1px solid var(--line-2, rgba(255, 255, 255, 0.16));
-		background: rgba(9, 9, 12, 0.94);
-		box-shadow: 0 24px 70px -20px rgba(0, 0, 0, 0.9);
-	}
-
-	.form-head {
-		display: flex;
 		justify-content: space-between;
-		align-items: center;
-		padding: 1rem 1.5rem;
-		border-bottom: 1px solid var(--line);
-		background: rgba(255, 255, 255, 0.025);
+		gap: 16px;
+		min-height: 60px;
+		border-top: 1px solid var(--line);
+		transition: border-color 0.8s ease;
 	}
 
-	.form-head :global(.label) {
-		color: #94949e;
+	.channel-label {
+		font-size: 18px;
+		font-weight: 500;
 	}
 
-	.form {
-		display: flex;
-		flex-direction: column;
-		gap: 1.75rem;
-		padding: 2rem 1.5rem;
-	}
-
-	@media (min-width: 640px) {
-		.form {
-			padding: 2.5rem;
-		}
-	}
-
-	.field {
-		display: flex;
-		flex-direction: column;
-		gap: 0.55rem;
-	}
-
-	/* Field labels sit above the dim --color-faint the .label class defaults to,
-	   so they stay legible as form copy rather than decorative micro-text. */
-	.field :global(.label) {
-		color: #94949e;
-		font-size: 0.625rem;
-	}
-
-	/* Fully boxed rather than underlined: the underline read as plain text over
-	   a busy background and gave no affordance that it was an input at all. */
-	input,
-	textarea {
-		width: 100%;
-		background: rgba(255, 255, 255, 0.045);
-		border: 1px solid rgba(255, 255, 255, 0.14);
-		border-radius: 2px;
-		padding: 0.8rem 0.9rem;
-		font-family: inherit;
-		font-size: 0.9375rem;
-		line-height: 1.5;
-		color: #f0f0f2;
-		outline: none;
-		resize: vertical;
-		transition:
-			border-color 0.3s ease,
-			background 0.3s ease,
-			box-shadow 0.3s ease;
-	}
-
-	input::placeholder,
-	textarea::placeholder {
-		color: #6b6b76;
-	}
-
-	input:hover,
-	textarea:hover {
-		border-color: rgba(255, 255, 255, 0.26);
-	}
-
-	input:focus,
-	textarea:focus {
-		border-color: #2bf5c0;
-		background: rgba(43, 245, 192, 0.05);
-		box-shadow: 0 0 0 3px rgba(43, 245, 192, 0.14);
-	}
-
-	/* The ring above already marks focus; suppress the global outline so the
-	   two do not stack into a double border. */
-	input:focus-visible,
-	textarea:focus-visible {
-		outline: none;
-	}
-
-	/* The label tints while its field is focused. */
-	.field:focus-within :global(.label) {
-		color: #2bf5c0;
-	}
-
-	button {
-		align-self: flex-start;
-		display: inline-flex;
-		align-items: center;
-		gap: 0.75rem;
-		margin-top: 0.5rem;
-		padding: 0.95rem 1.75rem;
-		border: 0;
-		background: #2bf5c0;
-		color: #050506;
-		font-family: 'JetBrains Mono Variable', monospace;
-		font-size: 0.6875rem;
-		letter-spacing: 0.16em;
-		text-transform: uppercase;
-		cursor: pointer;
-		transition:
-			box-shadow 0.45s ease,
-			opacity 0.3s ease;
-	}
-
-	button:hover:not(:disabled) {
-		box-shadow: 0 0 34px rgba(43, 245, 192, 0.45);
-	}
-
-	button:disabled {
-		opacity: 0.55;
-		cursor: wait;
-	}
-
-	.foot {
-		margin: 0;
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.pip {
-			animation: none;
-		}
+	.reply {
+		font-size: 17px;
 	}
 </style>
