@@ -82,16 +82,26 @@
 			? `now listening · ${kerala.clock}`
 			: shown
 				? `Last played · ${since}`
-				: `Nothing playing · ${kerala.clock}`
+				: `He's idle, Nothing playing`
 	);
+
+	/**
+	 * Where in the list this visit starts. Picked once per page load, because
+	 * deriving the joke from the clock alone meant every reload inside the same
+	 * five minutes showed the same line.
+	 *
+	 * Set in onMount so the server and the client never disagree about it.
+	 */
+	let seed = $state(0);
 
 	/**
 	 * Rotates every five minutes off the clock that is already ticking — no
 	 * second timer, and nothing changes fast enough to nag someone mid-read.
 	 */
-	const joke = $derived(IDLE_LINES[Math.floor(kerala.minutes / 5) % IDLE_LINES.length]);
+	const joke = $derived(IDLE_LINES[(seed + Math.floor(kerala.minutes / 5)) % IDLE_LINES.length]);
 
 	onMount(() => {
+		seed = Math.floor(Math.random() * IDLE_LINES.length);
 		if (!WS_URL) return;
 
 		let socket: WebSocket | null = null;
@@ -189,6 +199,7 @@
 		this={playing && shown?.url ? 'a' : 'div'}
 		class="np"
 		class:idle={!playing}
+		class:bare={!shown}
 		href={playing && shown?.url ? shown.url : undefined}
 		target={playing && shown?.url ? '_blank' : undefined}
 		rel={playing && shown?.url ? 'noopener noreferrer' : undefined}
@@ -271,8 +282,11 @@
 			right: 24px;
 			bottom: 24px;
 			left: auto;
-			width: 260px;
-			gap: 14px;
+			width: 220px;
+			/* Spacing lives on the children, not as a flex gap: a gap is still
+			   applied either side of the zero-width arrow at rest, which wasted
+			   14px inside the pill and pushed the title's ellipsis in early. */
+			gap: 0;
 			padding: 10px 14px 10px 10px;
 			border-radius: 16px;
 			transition:
@@ -286,6 +300,32 @@
 		.np:focus-within {
 			width: 380px;
 			opacity: 1;
+		}
+
+		/*
+		 * Nothing playing and no remembered track: the only content is the
+		 * joke, so there is nothing for a hover to reveal except the label.
+		 * A fixed 220px pill amputated the longer lines ("Apparently he is
+		 * doi…"), so this state sizes to its text instead and never expands.
+		 * Width is not transitioned here because `auto` cannot interpolate —
+		 * it would half-animate and look broken.
+		 */
+		.np.bare,
+		.np.bare:hover,
+		.np.bare:focus-within {
+			width: auto;
+			max-width: 380px;
+			transition:
+				background 0.8s ease,
+				border-color 0.8s ease,
+				color 0.8s ease;
+		}
+
+		/* One line, always: it is what gives the card its width. */
+		.np.bare .joke,
+		.np.bare:hover .joke,
+		.np.bare:focus-within .joke {
+			white-space: nowrap;
 		}
 
 		/*
@@ -306,25 +346,46 @@
 			overflow: hidden;
 		}
 
+		/*
+		 * The label must never wrap mid-transition.
+		 *
+		 * "Anandhu is now listening · 13:30" does not fit the narrow resting
+		 * pill, so it used to wrap to two lines and un-wrap partway through the
+		 * expansion. The card's height therefore depended on its width, and it
+		 * overshot by ~11px and snapped back in a single frame. Pinning it to
+		 * one line makes the height change monotonic; it simply stays clipped
+		 * by .reveal's overflow until there is room for it.
+		 */
+		.label {
+			white-space: nowrap;
+		}
+
 		.np:hover .reveal,
 		.np:focus-within .reveal {
 			grid-template-rows: 1fr;
 			opacity: 1;
 		}
 
-		/* The arrow only earns its space once the card is open. */
+		.art {
+			margin-right: 14px;
+		}
+
+		/* The arrow takes no width *and* no margin until the card is open. */
 		.go {
 			width: 0;
+			margin-left: 0;
 			opacity: 0;
 			overflow: hidden;
 			transition:
 				width 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+				margin-left 0.35s cubic-bezier(0.22, 1, 0.36, 1),
 				opacity 0.2s ease;
 		}
 
 		.np:hover .go,
 		.np:focus-within .go {
 			width: 16px;
+			margin-left: 14px;
 			opacity: 1;
 		}
 	}
@@ -489,6 +550,7 @@
 
 		.go {
 			width: auto;
+			margin-left: 14px;
 			opacity: 1;
 		}
 	}

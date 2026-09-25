@@ -12,6 +12,7 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import { kerala, startClock } from '$lib/kerala.svelte';
+	import { faviconHref } from '$lib/favicon';
 	import NowPlaying from '$lib/components/NowPlaying.svelte';
 
 	let { children } = $props();
@@ -25,6 +26,10 @@
 	});
 
 	const canonical = $derived(`https://imanandhu.in${page.url.pathname}`);
+
+	// The tab icon tracks Kerala time along with everything else, including
+	// while the home slider previews another hour.
+	const icon = $derived(faviconHref(kerala.theme));
 </script>
 
 <svelte:head>
@@ -34,7 +39,11 @@
 		content="Software Engineer from Kerala, India. Clean interfaces, systems that hold up, and a site that runs on Kerala time."
 	/>
 	<link rel="canonical" href={canonical} />
-	<link rel="icon" href="/favicon.ico" />
+	<!-- The .ico is the fallback for anything that will not take an SVG icon;
+	     browsers that do take one prefer the type-annotated link below. -->
+	<link rel="icon" href="/favicon.ico" sizes="32x32" />
+	<link rel="icon" type="image/svg+xml" href={icon} />
+	<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
 	<link rel="preload" href={geistLatin} as="font" type="font/woff2" crossorigin="anonymous" />
 	<link rel="preload" href={monoLatin} as="font" type="font/woff2" crossorigin="anonymous" />
