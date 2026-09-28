@@ -3,6 +3,7 @@
 	import { browser } from '$app/environment';
 	import { env } from '$env/dynamic/public';
 	import { kerala } from '$lib/kerala.svelte';
+	import { ARROW_NE } from '$lib/glyphs';
 
 	/**
 	 * Visitor-side view of the now-playing room. The data source and protocol
@@ -312,7 +313,7 @@
 			</span>
 
 			{#if linkHref}
-				<span class="go" aria-hidden="true">↗</span>
+				<span class="go" aria-hidden="true">{ARROW_NE}</span>
 			{/if}
 		</svelte:element>
 

@@ -2,6 +2,7 @@
 	import SiteHeader from '$lib/components/SiteHeader.svelte';
 	import { kerala } from '$lib/kerala.svelte';
 	import { crafts, projects } from '$lib/data/projects';
+	import { ARROW_NE } from '$lib/glyphs';
 
 	/** How many projects show before "Show all". */
 	const VISIBLE = 5;
@@ -123,7 +124,7 @@
 						{#if on}<span>● happening now</span>{/if}
 					</span>
 					<span class="card-name"
-						>{c.name}{#if c.href}&nbsp;↗{/if}</span
+						>{c.name}{#if c.href}&nbsp;{ARROW_NE}{/if}</span
 					>
 					<span class="card-line">{c.line}</span>
 				</svelte:element>

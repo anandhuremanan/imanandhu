@@ -4,6 +4,7 @@
 	import SiteFooter from '$lib/components/SiteFooter.svelte';
 	import { kerala } from '$lib/kerala.svelte';
 	import { projects, MUSIC_URL, STORIES_URL } from '$lib/data/projects';
+	import { ARROW_NE } from '$lib/glyphs';
 
 	/** Index of the open accordion row. -1 means all closed. Newest opens first. */
 	let open = $state(0);
@@ -139,7 +140,7 @@
 							<div class="links">
 								{#each p.links as link (link.href)}
 									<a class="pill" href={link.href} target="_blank" rel="noopener noreferrer"
-										>{link.label} ↗</a
+										>{link.label} {ARROW_NE}</a
 									>
 								{/each}
 							</div>

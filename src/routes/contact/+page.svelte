@@ -3,6 +3,7 @@
 	import SiteFooter from '$lib/components/SiteFooter.svelte';
 	import { kerala } from '$lib/kerala.svelte';
 	import { socials, MUSIC_URL, STORIES_URL, PAINT_URL } from '$lib/data/projects';
+	import { ARROW_NE } from '$lib/glyphs';
 
 	/** The existing endpoint. Unchanged — messages keep arriving the same way. */
 	const FORMSPREE = 'https://formspree.io/f/xbddkkjy';
@@ -137,7 +138,7 @@
 					{#each socials as c (c.href)}
 						<a class="channel" href={c.href} target="_blank" rel="noopener noreferrer">
 							<span class="channel-label">{c.label}</span>
-							<span class="meta">{c.handle} ↗</span>
+							<span class="meta">{c.handle} {ARROW_NE}</span>
 						</a>
 					{/each}
 				</div>
