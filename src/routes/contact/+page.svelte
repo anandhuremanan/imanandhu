@@ -134,12 +134,12 @@
 
 				<div class="field">
 					<label class="meta" for="c-name">Your name</label>
-					<input id="c-name" name="name" type="text" required bind:value={name} />
+					<input id="c-name" name="name" type="text" autocomplete="name" required bind:value={name} />
 				</div>
 
 				<div class="field">
 					<label class="meta" for="c-email">Your email</label>
-					<input id="c-email" name="email" type="email" required bind:value={email} />
+					<input id="c-email" name="email" type="email" autocomplete="email" required bind:value={email} />
 				</div>
 
 				<div class="field">
@@ -297,6 +297,33 @@
 		padding: 14px 0;
 		line-height: 1.5;
 		resize: vertical;
+	}
+
+	/*
+	 * Chrome paints autofilled fields a fixed pale blue and near-black text,
+	 * which on the dusk and night palettes is a white slab in the middle of the
+	 * form. `background-color` cannot override it — the UA style wins — but a
+	 * large inset box-shadow paints over it, and -webkit-text-fill-color beats
+	 * `color` on an autofilled control.
+	 *
+	 * :hover, :focus and :active are listed because Chrome re-applies its own
+	 * colours on each of those states independently.
+	 */
+	input:-webkit-autofill,
+	input:-webkit-autofill:hover,
+	input:-webkit-autofill:focus,
+	input:-webkit-autofill:active,
+	textarea:-webkit-autofill,
+	textarea:-webkit-autofill:hover,
+	textarea:-webkit-autofill:focus {
+		-webkit-text-fill-color: var(--fg);
+		caret-color: var(--fg);
+		box-shadow: 0 0 0 1000px var(--bg) inset;
+		/* The shadow repaints instantly, but Chrome animates its own background
+		   in over ~0.2s. Parking that transition keeps the blue from flashing. */
+		transition:
+			background-color 600000s 0s,
+			border-color 0.8s ease;
 	}
 
 	input:focus-visible,
