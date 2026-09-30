@@ -100,7 +100,9 @@ describe('renderAck', () => {
 	it('goes to the visitor, and replies to a human', () => {
 		const m = renderAck(ok, env, day);
 		expect(m.to).toBe(ok.email);
-		expect(m.from).toBe(env.MAIL_FROM);
+		// Sends from the verified address, but labelled as the person rather
+		// than MAIL_FROM's "Portfolio" — see the sender-name tests below.
+		expect(m.from).toContain('<contact@imanandhu.in>');
 		expect(m.reply_to).toBe(env.MAIL_TO);
 	});
 
@@ -141,5 +143,30 @@ describe('renderAck', () => {
 		expect(html).not.toMatch(/<style[\s>]/);
 		// Layout tables must not be announced as data tables.
 		expect(html).not.toMatch(/<table(?![^>]*role="presentation")/);
+	});
+});
+
+describe('acknowledgement sender name', () => {
+	const day = keralaNow(new Date('2026-09-30T06:30:00Z'));
+
+	it('shows the person, not the MAIL_FROM label, to the visitor', () => {
+		const m = renderAck(ok, { MAIL_FROM: 'Portfolio <contact@imanandhu.in>', MAIL_TO: 'x@y.z' }, day);
+		expect(m.from).toBe('"Anandhu Remanan" <contact@imanandhu.in>');
+		expect(m.from).not.toContain('Portfolio');
+	});
+
+	it('keeps the notification on MAIL_FROM, which lands in his own inbox', () => {
+		const m = renderMail(ok, { MAIL_FROM: 'Portfolio <contact@imanandhu.in>', MAIL_TO: 'x@y.z' });
+		expect(m.from).toBe('Portfolio <contact@imanandhu.in>');
+	});
+
+	it('accepts a bare MAIL_FROM with no display name', () => {
+		const m = renderAck(ok, { MAIL_FROM: 'contact@imanandhu.in', MAIL_TO: 'x@y.z' }, day);
+		expect(m.from).toBe('"Anandhu Remanan" <contact@imanandhu.in>');
+	});
+
+	it('never changes the address, only the label in front of it', () => {
+		const m = renderAck(ok, { MAIL_FROM: 'Anything <no-reply@imanandhu.in>', MAIL_TO: 'x@y.z' }, day);
+		expect(m.from).toContain('<no-reply@imanandhu.in>');
 	});
 });

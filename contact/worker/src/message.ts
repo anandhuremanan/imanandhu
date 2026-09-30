@@ -129,6 +129,42 @@ export function renderMail(
 }
 
 /* ------------------------------------------------------------------ *
+ * Sender identity
+ * ------------------------------------------------------------------ */
+
+/**
+ * The name a stranger sees in their inbox list.
+ *
+ * MAIL_FROM's display name ("Portfolio") is a useful label in Anandhu's own
+ * inbox, but it is the wrong thing to show someone who just wrote to a person.
+ * The address is untouched — it must stay on the Resend-verified domain — only
+ * the display name in front of it changes.
+ */
+const ACK_FROM_NAME = 'Anandhu Remanan';
+
+/** The bare address out of `Name <addr@host>`, or the whole string if bare. */
+function addressOf(mailFrom: string): string {
+	// The capture is guaranteed by the pattern, but TypeScript types every
+	// group as possibly-undefined.
+	const angled = mailFrom.match(/<([^>]+)>\s*$/);
+	return (angled?.[1] ?? mailFrom).trim();
+}
+
+/**
+ * `Display Name <addr@host>`, with the name as an RFC 5322 quoted-string.
+ *
+ * Quoting is not cosmetic: a display name may contain a comma or a full stop,
+ * either of which changes how an unquoted name parses. Inside the quotes only
+ * `"` and `\` are special, so both are escaped. CR/LF never reaches here —
+ * validate() strips it — but the escaping means a name could not break the
+ * header even if it did.
+ */
+function formatFrom(name: string, address: string): string {
+	const safe = name.replace(/[\\"]/g, (c) => '\\' + c);
+	return `"${safe}" <${address}>`;
+}
+
+/* ------------------------------------------------------------------ *
  * Acknowledgement sent back to the visitor
  * ------------------------------------------------------------------ */
 
@@ -220,7 +256,7 @@ This note is automatic. The reply will not be.
 </body></html>`;
 
 	return {
-		from: env.MAIL_FROM,
+		from: formatFrom(ACK_FROM_NAME, addressOf(env.MAIL_FROM)),
 		to: value.email,
 		// A reply to this courtesy note should still reach a human.
 		reply_to: env.MAIL_TO,
