@@ -202,9 +202,8 @@ export const socials = [
 	{
 		label: 'LinkedIn',
 		handle: 'anandhuremanan',
-		href: 'https://www.linkedin.com/in/anandhuremanan/'
+		href: 'https://www.linkedin.com/in/anandhuor'
 	},
-	{ label: 'X / Twitter', handle: '@anandhu_or', href: 'https://twitter.com/anandhu_or' },
 	{ label: 'npm', handle: '~anandhu_or', href: 'https://www.npmjs.com/~anandhu_or' },
 	{ label: 'crates.io', handle: 'ananduremanan', href: 'https://crates.io/users/ananduremanan' }
 ];
