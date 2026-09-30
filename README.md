@@ -8,7 +8,7 @@ To run the project, execute the following command in the root of the project
 
 `npm install && npm run dev -- --open`
 
-# Live Site
+# Live Site 
 
 Visit the live site @ [imanandhu](https://imanandhu.pages.dev)
 

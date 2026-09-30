@@ -39,6 +39,30 @@ export interface Project {
 /** Newest first. The case-study list numbers these in reverse (05 … 01). */
 export const projects: Project[] = [
 	{
+		id: 'web-scanner',
+		name: 'Web Scanner',
+		year: '2026',
+		platform: 'Go · Passive recon',
+		blurb: 'What your domain leaks in public',
+		desc: 'Enter a domain and see what the public internet already knows about it — subdomains sitting in certificate transparency logs, routes remembered by web archives, paths published in robots.txt and sitemaps.',
+		problem:
+			'Every certificate you issue is logged publicly, forever. Staging hosts, internal tools and forgotten subdomains end up in those logs and in web archives, and most owners never look — the exposure is public by design, but invisible in practice.',
+		solution:
+			'Read the public record instead of attacking the host. Subdomains come from crt.sh and Cert Spotter, then get DNS-verified; routes come from archives, robots.txt and sitemaps, with an optional crawl. Every result carries the source it came from, so nothing is a guess.',
+		tech: 'Go 1.23 · React · Certificate Transparency · Wayback · No database',
+		detail: [
+			'api.example.com      crt.sh',
+			'staging.example.com  certspotter',
+			'/admin               robots.txt',
+			'/old-pricing         wayback'
+		],
+		caption: 'Every finding, with its source',
+		links: [
+			{ label: 'Visit live', href: 'https://webscanner.imanandhu.in' },
+			{ label: 'Source', href: 'https://github.com/anandhuremanan/website_mapper' }
+		]
+	},
+	{
 		id: 'gramprokit',
 		name: 'GramproKit',
 		year: '2026',

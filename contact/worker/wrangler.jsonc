@@ -1,0 +1,40 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "contact-form",
+	"main": "src/index.ts",
+	"compatibility_date": "2025-09-01",
+
+	"observability": {
+		"enabled": true
+	},
+
+	// Built into the Workers runtime — not a database, not a new backend.
+	// `period` accepts only 10 or 60. Enforcement is per-location and
+	// best-effort, which is the right trade for abuse control on a contact
+	// form: a determined attacker gets a few more through, an honest visitor
+	// is never wrongly blocked.
+	"ratelimits": [
+		{
+			"name": "CONTACT_LIMIT",
+			"namespace_id": "2001",
+			"simple": {
+				"limit": 5,
+				"period": 60
+			}
+		}
+	],
+
+	"vars": {
+		// Browser origins allowed to POST here. Comma-separated, exact match.
+		// Loopback (localhost / 127.0.0.1, any port) is always allowed so local
+		// development needs no entry.
+		"ALLOWED_ORIGINS": "https://imanandhu.in,https://www.imanandhu.in",
+
+		// Verified sender on your Resend domain, and where mail lands.
+		"MAIL_FROM": "Portfolio <contact@imanandhu.in>",
+		"MAIL_TO": "mails@imanandhu.in"
+
+		// RESEND_API_KEY is deliberately NOT here: it is a secret, set once with
+		//   wrangler secret put RESEND_API_KEY
+	}
+}

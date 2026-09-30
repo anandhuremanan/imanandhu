@@ -4,9 +4,20 @@
 	import { kerala } from '$lib/kerala.svelte';
 	import { socials, MUSIC_URL, STORIES_URL, PAINT_URL } from '$lib/data/projects';
 	import { ARROW_NE } from '$lib/glyphs';
+	import { env } from '$env/dynamic/public';
 
-	/** The existing endpoint. Unchanged — messages keep arriving the same way. */
-	const FORMSPREE = 'https://formspree.io/f/xbddkkjy';
+	/**
+	 * Contact Worker endpoint (contact/worker). Unset in an environment that has
+	 * no Worker — the form then degrades to the channel list beside it rather
+	 * than offering a send button that cannot work.
+	 *
+	 * Replaced Formspree, which had reCAPTCHA enabled on the form and so
+	 * answered every AJAX submission with
+	 *   403 {"error":"In order to submit via AJAX, you need to set a custom key
+	 *        or reCAPTCHA must be disabled in this form's settings page."}
+	 * Nothing sent for as long as that setting was on.
+	 */
+	const ENDPOINT = env.PUBLIC_CONTACT_ENDPOINT ?? '';
 
 	let name = $state('');
 	let email = $state('');
@@ -14,11 +25,18 @@
 	let sending = $state(false);
 	let sent = $state(false);
 	let failed = $state(false);
+	/** Honeypot, hidden from humans and left empty by them. See the Worker. */
+	let company = $state('');
+	/** What the Worker said, when it said something a visitor can act on. */
+	let reason = $state('');
 	/** Kerala time at the moment it actually sent, so the receipt stays truthful. */
 	let sentAt = $state('');
 
 	const ready = $derived(
-		name.trim().length > 0 && /.+@.+\..+/.test(email.trim()) && message.trim().length > 0
+		ENDPOINT !== '' &&
+			name.trim().length > 0 &&
+			/.+@.+\..+/.test(email.trim()) &&
+			message.trim().length > 0
 	);
 
 	async function submit(event: SubmitEvent) {
@@ -29,18 +47,22 @@
 		failed = false;
 
 		try {
-			// Formspree returns JSON instead of redirecting when asked to, which is
-			// what lets the designed success state replace the form in place.
-			const res = await fetch(FORMSPREE, {
+			const res = await fetch(ENDPOINT, {
 				method: 'POST',
-				headers: { Accept: 'application/json' },
-				body: new FormData(event.currentTarget as HTMLFormElement)
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ name, email, message, company })
 			});
-			if (!res.ok) throw new Error(String(res.status));
+			// The Worker explains a 400 or a 429 in its own words; anything else
+			// gets the generic line, since its body is not meant for visitors.
+			if (!res.ok) {
+				const body = await res.json().catch(() => null);
+				throw new Error(typeof body?.error === 'string' ? body.error : '');
+			}
 			sentAt = kerala.clock;
 			sent = true;
-		} catch {
+		} catch (err) {
 			// Never pretend a message was delivered when it was not.
+			reason = err instanceof Error && err.message ? err.message : '';
 			failed = true;
 		} finally {
 			sending = false;
@@ -50,6 +72,7 @@
 	function again() {
 		sent = false;
 		failed = false;
+		reason = '';
 		name = '';
 		email = '';
 		message = '';
@@ -97,9 +120,18 @@
 				<button type="button" class="pill small" onclick={again}>Send another</button>
 			</div>
 		{:else}
-			<!-- action/method are kept so the form still works if the fetch path
-			     fails or JavaScript never runs; submit() intercepts otherwise. -->
-			<form class="form" action={FORMSPREE} method="POST" onsubmit={submit}>
+			<!-- No action/method fallback: the Worker replies with JSON, so a
+			     non-JS POST would land the visitor on a bare {"ok":true}. The
+			     channel list beside the form is the no-JS path. -->
+			<form class="form" onsubmit={submit}>
+				<!-- Honeypot. Hidden from sight, from screen readers and from the
+				     tab order, so only a bot that fills every input trips it. -->
+				<div class="hp" aria-hidden="true">
+					<label for="c-company">Company</label>
+					<input id="c-company" name="company" type="text" tabindex="-1" autocomplete="off"
+						bind:value={company} />
+				</div>
+
 				<div class="field">
 					<label class="meta" for="c-name">Your name</label>
 					<input id="c-name" name="name" type="text" required bind:value={name} />
@@ -117,8 +149,9 @@
 
 				{#if failed}
 					<p class="error" role="alert">
-						That didn't send — the network or the form service refused it. Try again, or reach me on
-						one of the channels listed here.
+						{reason ||
+							"That didn't send — the network or the mail service refused it."} Try again, or reach
+						me on one of the channels listed here.
 					</p>
 				{/if}
 
@@ -126,7 +159,7 @@
 					<button type="submit" class="send" class:ready disabled={!ready || sending}>
 						{sending ? 'Sending…' : 'Send message →'}
 					</button>
-					<span class="meta">Sent privately via Formspree</span>
+					<span class="meta">Goes straight to my inbox — nothing is stored</span>
 				</div>
 			</form>
 		{/if}
@@ -219,6 +252,19 @@
 	}
 
 	/* ---------------------------------------------------------- form */
+	/*
+	 * Not `display: none` — some bots skip hidden inputs, and some browsers
+	 * skip autofill on them. Taken out of flow and clipped instead.
+	 */
+	.hp {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+	}
+
 	.form {
 		display: flex;
 		flex-direction: column;

@@ -10,6 +10,8 @@
 	let open = $state(0);
 
 	/**
+	 * The visible title is "Work" (matching the nav) but the route stays
+	 * /case-studies: those anchors are already public and linked elsewhere.
 	 * The anchors (/case-studies#filedrop) are public URLs, so arriving at one
 	 * must open that study, not just scroll near it.
 	 *
@@ -34,7 +36,7 @@
 	const schema = {
 		'@context': 'https://schema.org',
 		'@type': 'ItemList',
-		name: 'Case Studies — Anandhu Remanan',
+		name: 'Work — Anandhu Remanan',
 		itemListElement: projects.map((p, i) => ({
 			'@type': 'ListItem',
 			position: i + 1,
@@ -60,12 +62,12 @@
 </script>
 
 <svelte:head>
-	<title>Case studies — Anandhu Remanan</title>
+	<title>Work — Anandhu Remanan</title>
 	<meta
 		name="description"
 		content="The problem, the process, and the decisions that shaped each thing I've built."
 	/>
-	<meta property="og:title" content="Case studies — Anandhu Remanan" />
+	<meta property="og:title" content="Work — Anandhu Remanan" />
 	<meta
 		property="og:description"
 		content="The problem, the process, and the decisions that shaped each thing I've built."
@@ -82,7 +84,7 @@
 
 	<section class="intro">
 		<div class="intro-text">
-			<h1 class="h1">Case studies</h1>
+			<h1 class="h1">Work</h1>
 			<p class="sub">
 				The problem, the process, and the decisions that shaped each thing I've built.
 			</p>
