@@ -35,6 +35,23 @@ messages a month; this is unmetered and the mail arrives from your own domain.
 | Resend fails | 502 with a generic line; the real error goes to `wrangler tail` only |
 | Success | 200 `{"ok":true}` |
 
+Two emails leave per submission:
+
+1. **The notification**, to `MAIL_TO`. Plain and quick to scan, with
+   `reply_to` set to the visitor so replying reaches them.
+2. **The acknowledgement**, to the visitor. Themed by the Kerala hour it was
+   sent — the same four palettes as the site — quoting their message back and
+   saying when it landed. `reply_to` is `MAIL_TO`, so a reply to it still
+   reaches a human.
+
+Only the notification decides the HTTP status. The acknowledgement goes out in
+`ctx.waitUntil()` after the response is already on its way: a visitor should
+not wait on a courtesy email, and if it fails, their message still arrived —
+so saying otherwise would be a lie. Failures are logged for `wrangler tail`.
+
+Note this doubles the mail per submission, against Resend's free 100/day. The
+rate limit is what keeps that from being exploitable.
+
 CR/LF is stripped from the name and email before they reach the `Subject` and
 `Reply-To` headers, and the message is HTML-escaped before it reaches the
 HTML part. `reply_to` is the visitor, so hitting reply in your mail client
@@ -168,8 +185,17 @@ npx wrangler dev --port 8788 --var RESEND_ENDPOINT:http://127.0.0.1:8899/emails
 cd contact/worker && npm test
 ```
 
-Covers validation boundaries, header-injection stripping, honeypot handling
-and HTML escaping — all without a Worker runtime or a Resend key.
+Covers validation boundaries, header-injection stripping, honeypot handling,
+HTML escaping, and the acknowledgement's theming, escaping and email-client
+constraints — all without a Worker runtime or a Resend key.
+
+To look at the acknowledgement rather than assert about it:
+
+```bash
+cd contact/worker && npx tsx preview.mjs
+```
+
+which writes one HTML file per palette for you to open in a browser.
 
 ## If spam ever arrives
 

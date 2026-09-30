@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { LIMITS, renderMail, validate } from '../src/message';
+import { LIMITS, renderAck, renderMail, validate } from '../src/message';
+import { keralaNow, THEMES } from '../src/kerala';
 
 const ok = { name: 'Asha', email: 'asha@example.com', message: 'Hello there.' };
 
@@ -86,5 +87,59 @@ describe('renderMail', () => {
 		const m = renderMail({ ...ok, message: 'one\ntwo' }, env);
 		expect(m.text).toContain('one\ntwo');
 		expect(m.html).toContain('white-space:pre-wrap');
+	});
+});
+
+describe('renderAck', () => {
+	const env = { MAIL_FROM: 'Portfolio <contact@imanandhu.in>', MAIL_TO: 'mails@imanandhu.in' };
+	// 16:30 UTC == 22:00 IST == night.
+	const night = keralaNow(new Date('2026-09-30T16:30:00Z'));
+	// 06:30 UTC == 12:00 IST == day.
+	const day = keralaNow(new Date('2026-09-30T06:30:00Z'));
+
+	it('goes to the visitor, and replies to a human', () => {
+		const m = renderAck(ok, env, day);
+		expect(m.to).toBe(ok.email);
+		expect(m.from).toBe(env.MAIL_FROM);
+		expect(m.reply_to).toBe(env.MAIL_TO);
+	});
+
+	it('is themed by the hour it was sent', () => {
+		expect(renderAck(ok, env, night).html).toContain(THEMES.night.bg);
+		expect(renderAck(ok, env, night).html).not.toContain(THEMES.day.bg);
+		expect(renderAck(ok, env, day).html).toContain(THEMES.day.bg);
+		expect(renderAck(ok, env, night).html).toContain('22:00');
+		expect(renderAck(ok, env, day).text).toContain('12:00');
+	});
+
+	it('greets by first name only', () => {
+		const m = renderAck({ ...ok, name: 'Asha Nair' }, env, day);
+		expect(m.text).toContain('Thanks for writing, Asha.');
+		expect(m.text).not.toContain('Asha Nair.');
+	});
+
+	it('escapes the quoted message and the name', () => {
+		const m = renderAck(
+			{ ...ok, name: '<b>x</b>', message: '<script>alert(1)</script>' },
+			env,
+			day
+		);
+		expect(m.html).not.toContain('<script>');
+		expect(m.html).not.toContain('<b>x</b>');
+		expect(m.html).toContain('&lt;script&gt;');
+	});
+
+	it('turns newlines into <br>, since Word ignores pre-wrap', () => {
+		const m = renderAck({ ...ok, message: 'one\ntwo' }, env, day);
+		expect(m.html).toContain('one<br />two');
+	});
+
+	it('carries a hidden preheader and no external stylesheet', () => {
+		const html = renderAck(ok, env, day).html;
+		expect(html).toContain('max-height:0');
+		expect(html).not.toContain('<link');
+		expect(html).not.toMatch(/<style[\s>]/);
+		// Layout tables must not be announced as data tables.
+		expect(html).not.toMatch(/<table(?![^>]*role="presentation")/);
 	});
 });

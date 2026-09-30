@@ -9,7 +9,8 @@
  * handed to Resend within the one request; nothing is stored anywhere.
  */
 
-import { renderMail, validate } from './message';
+import { renderAck, renderMail, validate, type RenderedMail } from './message';
+import { keralaNow } from './kerala';
 
 export interface Env {
 	RESEND_API_KEY: string;
@@ -69,8 +70,36 @@ function json(body: unknown, status: number, origin: string | null): Response {
 	});
 }
 
+/**
+ * One POST to Resend. Returns whether it landed; never throws, so a caller can
+ * decide for itself whether a failure is worth failing the request over.
+ *
+ * Resend's error bodies can name the sending domain and the state of the API
+ * key, so they are logged for `wrangler tail` and never returned to a visitor.
+ */
+async function send(mail: RenderedMail, env: Env, label: string): Promise<boolean> {
+	try {
+		const res = await fetch(env.RESEND_ENDPOINT || RESEND_ENDPOINT, {
+			method: 'POST',
+			headers: {
+				Authorization: `Bearer ${env.RESEND_API_KEY}`,
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(mail)
+		});
+		if (!res.ok) {
+			console.error(`resend rejected ${label}`, res.status, await res.text().catch(() => ''));
+			return false;
+		}
+		return true;
+	} catch (err) {
+		console.error(`resend unreachable for ${label}`, err);
+		return false;
+	}
+}
+
 export default {
-	async fetch(request: Request, env: Env): Promise<Response> {
+	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
 		const origin = request.headers.get('Origin');
 		const { pathname } = new URL(request.url);
 
@@ -116,29 +145,16 @@ export default {
 			return json({ error: result.reason }, 400, origin);
 		}
 
-		const mail = renderMail(result.value, env);
-
-		let res: Response;
-		try {
-			res = await fetch(env.RESEND_ENDPOINT || RESEND_ENDPOINT, {
-				method: 'POST',
-				headers: {
-					Authorization: `Bearer ${env.RESEND_API_KEY}`,
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify(mail)
-			});
-		} catch (err) {
-			console.error('resend unreachable', err);
+		// The notification is the one that matters: it decides the HTTP status.
+		if (!(await send(renderMail(result.value, env), env, 'notification'))) {
 			return json({ error: 'Could not send right now. Try again shortly.' }, 502, origin);
 		}
 
-		if (!res.ok) {
-			// Logged for `wrangler tail`, never returned: Resend's errors can name
-			// the sending domain and the key's state, which the visitor must not see.
-			console.error('resend rejected', res.status, await res.text().catch(() => ''));
-			return json({ error: 'Could not send right now. Try again shortly.' }, 502, origin);
-		}
+		// The acknowledgement is a courtesy. It goes out after the response is
+		// already on its way, and a failure is logged rather than surfaced —
+		// the visitor's message *did* arrive, so telling them it did not would
+		// be a lie, and making them wait on a second API call would be rude.
+		ctx.waitUntil(send(renderAck(result.value, env, keralaNow()), env, 'acknowledgement'));
 
 		return json({ ok: true }, 200, origin);
 	}
