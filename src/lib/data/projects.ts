@@ -130,7 +130,7 @@ export const projects: Project[] = [
 		id: 'filedrop',
 		name: 'FileDrop',
 		year: '2025',
-		platform: 'Web + Desktop',
+		platform: 'Web + Desktop + Android',
 		blurb: 'Private cross-platform file transfer',
 		desc: 'Secure, cross-platform file transfer between devices using temporary sessions. Simple, fast, privacy-first.',
 		problem:
