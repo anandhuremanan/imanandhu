@@ -116,6 +116,13 @@
 				{#if on}
 					<div class="panel" id="panel-{p.id}">
 						<div class="body">
+							<!-- Client work is labelled as such. Without it a reader assumes
+							     everything here is self-directed, which would misstate who
+							     owns the work. -->
+							{#if p.client}
+								<span class="client mono">Client · {p.client}</span>
+							{/if}
+
 							<p class="desc">{p.desc}</p>
 
 							<!-- On a phone the mock-up sits here, between the summary and the
@@ -374,6 +381,18 @@
 		.body {
 			gap: 28px;
 		}
+	}
+
+	.client {
+		align-self: flex-start;
+		padding: 5px 12px;
+		border: 1px solid var(--line);
+		border-radius: 999px;
+		color: var(--muted);
+		font-size: 11px;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		transition: border-color 0.8s ease;
 	}
 
 	.desc {

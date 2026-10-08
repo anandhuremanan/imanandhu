@@ -34,6 +34,11 @@ export interface Project {
 	detail: string[];
 	caption: string;
 	links: ProjectLink[];
+	/**
+	 * Set when the work was done for a client rather than for himself, so the
+	 * case study can say so. Omitted on personal projects.
+	 */
+	client?: string;
 }
 
 /** Newest first. The case-study list numbers these in reverse (05 … 01). */
@@ -82,9 +87,10 @@ export const projects: Project[] = [
 		],
 		caption: 'Copy-in blocks, themed by CSS variables',
 		links: [
-			{ label: 'Documentation', href: 'https://gramprokit.vercel.app/' },
+			{ label: 'Documentation', href: 'https://kit.gramproindia.com/' },
 			{ label: 'Source', href: 'https://github.com/anandhuremanan/headless-gbs-components' }
-		]
+		],
+		client: 'Grampro Business Services'
 	},
 	{
 		id: 'gbs-se-agent',
