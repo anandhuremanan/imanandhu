@@ -88,7 +88,7 @@ export const projects: Project[] = [
 		caption: 'Copy-in blocks, themed by CSS variables',
 		links: [
 			{ label: 'Documentation', href: 'https://kit.gramproindia.com/' },
-			{ label: 'Source', href: 'https://github.com/anandhuremanan/headless-gbs-components' }
+			{ label: 'Source', href: 'https://github.com/gramproindia/kit' }
 		],
 		client: 'Grampro Business Services'
 	},
