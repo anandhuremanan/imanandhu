@@ -8,8 +8,15 @@ export const STORIES_URL = 'https://stories.imanandhu.in';
  */
 export const PAINT_URL: string | null = null;
 
-/** The résumé link in every page header. */
-export const RESUME_URL = 'https://github.com/anandhuremanan';
+/**
+ * The résumé link in every page header.
+ *
+ * Served from static/, so it is a same-origin file rather than an offsite
+ * redirect. This is the public build of the PDF: no phone number, no personal
+ * email, no street-level address — it is linked from a public page and
+ * committed to a public repository, so it carries only what is already public.
+ */
+export const RESUME_URL = '/Anandhu-O-R-Resume.pdf';
 
 export interface ProjectLink {
 	label: string;
@@ -54,7 +61,7 @@ export const projects: Project[] = [
 			'Every certificate you issue is logged publicly, forever. Staging hosts, internal tools and forgotten subdomains end up in those logs and in web archives, and most owners never look — the exposure is public by design, but invisible in practice.',
 		solution:
 			'Read the public record instead of attacking the host. Subdomains come from crt.sh and Cert Spotter, then get DNS-verified; routes come from archives, robots.txt and sitemaps, with an optional crawl. Every result carries the source it came from, so nothing is a guess.',
-		tech: 'Go 1.23 · React · Certificate Transparency · Wayback · No database',
+		tech: 'Go · Next.js · Certificate Transparency · Wayback · SQLite · CLI',
 		detail: [
 			'api.example.com      crt.sh',
 			'staging.example.com  certspotter',
@@ -64,7 +71,7 @@ export const projects: Project[] = [
 		caption: 'Every finding, with its source',
 		links: [
 			{ label: 'Visit live', href: 'https://webscanner.imanandhu.in' },
-			{ label: 'Source', href: 'https://github.com/anandhuremanan/website_mapper' }
+			{ label: 'Source', href: 'https://github.com/anandhuremanan/Web-Scanner' }
 		]
 	},
 	{
