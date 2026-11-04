@@ -138,6 +138,9 @@
 			<!-- The site deliberately does not publish an email address. -->
 			<a class="cta" href="/contact">Send a message →</a>
 			<span class="socials mono">
+				<a class="tap" href="https://pflabs.in" target="_blank" rel="noopener noreferrer"
+					>PF Labs</a
+				>
 				<a
 					class="tap"
 					href="https://github.com/anandhuremanan"

@@ -237,7 +237,8 @@ describe('stale owner', () => {
 		h.room.handleAlarm();
 
 		expect(visitor.last('state')?.playing).toBe(false);
-		expect(visitor.last('state')?.title).toBeNull();
+		// The track is kept, not blanked: it is what "Last played" shows.
+		expect(visitor.last('state')?.title).toBe('Redbone');
 		expect(h.room.getState().playing).toBe(false);
 	});
 
@@ -403,8 +404,10 @@ describe('owner reconnection and duplicates', () => {
 
 		h.disconnect(second);
 
+		// The point of this test is that the room stops reporting playback
+		// once the last real owner goes, not that it forgets the track.
 		expect(visitor.last('state')?.playing).toBe(false);
-		expect(visitor.last('state')?.title).toBeNull();
+		expect(visitor.last('state')?.title).toBe('Redbone');
 	});
 
 	it('retires a closed socket so it cannot be counted again', () => {
@@ -436,7 +439,7 @@ describe('owner reconnection and duplicates', () => {
 });
 
 describe('pause', () => {
-	it('clears track details when the owner reports paused', () => {
+	it('keeps the track as last-played when the owner reports paused', () => {
 		const h = makeRoom();
 		const owner = h.connect('owner');
 		const visitor = h.connect('v1');
@@ -446,6 +449,32 @@ describe('pause', () => {
 		h.room.handleMessage(owner, track({ playing: false }));
 
 		expect(visitor.last('state')?.playing).toBe(false);
-		expect(visitor.last('state')?.title).toBeNull();
+		expect(visitor.last('state')?.title).toBe('Redbone');
+	});
+
+	it('gives a visitor who arrives after the music stopped the last track', () => {
+		const h = makeRoom();
+		const owner = h.connect('owner');
+		h.room.handleMessage(owner, authOwner());
+		h.room.handleMessage(owner, track());
+		h.room.handleMessage(owner, track({ playing: false, title: null }));
+
+		// Connects cold, with no memory of its own — this is the case that
+		// used to fall through to the idle joke.
+		const late = h.connect('late');
+		h.room.handleMessage(late, authVisitor());
+
+		expect(late.last('state')?.playing).toBe(false);
+		expect(late.last('state')?.title).toBe('Redbone');
+	});
+
+	it('lets a stopped frame that names a track override the remembered one', () => {
+		const h = makeRoom();
+		const owner = h.connect('owner');
+		h.room.handleMessage(owner, authOwner());
+		h.room.handleMessage(owner, track());
+		h.room.handleMessage(owner, track({ playing: false, title: 'Something Else' }));
+
+		expect(h.room.getState().title).toBe('Something Else');
 	});
 });

@@ -138,15 +138,24 @@ export class NowPlayingRoom {
 		if (message.type === 'now_playing') {
 			const now = this.env.now();
 			this.lastOwnerSeen = now;
+
+			// A stopped frame normally carries no track at all — the extension
+			// publishes a bare idle snapshot when the player goes quiet. Keep
+			// whatever was playing in that case, so the site can say "Last
+			// played" rather than falling back to an idle joke the moment the
+			// music ends. A stopped frame that does name a track wins, since
+			// the owner knows better than our memory of it.
+			const keep = !message.playing && !message.title ? this.state : message;
+
 			// Server clock, not the client's: the timestamp drives staleness, so
 			// a wrong clock on the laptop must not be able to skew it.
 			this.state = {
 				playing: message.playing,
-				title: message.playing ? message.title : null,
-				artist: message.playing ? message.artist : null,
-				album: message.playing ? message.album : null,
-				artwork: message.playing ? message.artwork : null,
-				url: message.playing ? message.url : null,
+				title: keep.title,
+				artist: keep.artist,
+				album: keep.album,
+				artwork: keep.artwork,
+				url: keep.url,
 				timestamp: now
 			};
 			this.env.persist(this.state);
@@ -194,25 +203,38 @@ export class NowPlayingRoom {
 	/* -------------------------------------------------------------- */
 
 	/**
+	 * Stopping keeps the track and flips only `playing`, so the site can say
+	 * "Last played" to someone who arrives after the music ended. Nulling the
+	 * fields — which is what IDLE_STATE does — left a fresh visitor nothing to
+	 * show but the idle joke, however recently he had been listening.
+	 *
+	 * This is still one record of current state, not a history: each track
+	 * replaces the last, and nothing accumulates.
+	 */
+	private stoppedState(): NowPlayingState {
+		return { ...this.state, playing: false, timestamp: this.env.now() };
+	}
+
+	/**
 	 * The state as a visitor should see it right now. Guards the window where
 	 * the owner vanished without a clean close and the alarm has not run yet,
-	 * so a newly connected visitor never receives a stale track.
+	 * so a newly connected visitor is never told a track is still playing.
 	 */
 	private effectiveState(): NowPlayingState {
 		if (!this.state.playing) return this.state;
 		if (this.env.now() - this.lastOwnerSeen >= OWNER_TIMEOUT_MS) {
-			return { ...IDLE_STATE, timestamp: this.env.now() };
+			return this.stoppedState();
 		}
 		return this.state;
 	}
 
 	private goIdle(): void {
-		if (!this.state.playing && this.state.title === null) {
-			// Already idle; still cancel the alarm so we stop waking up.
+		if (!this.state.playing) {
+			// Already stopped; still cancel the alarm so we stop waking up.
 			this.env.setAlarm(null);
 			return;
 		}
-		this.state = { ...IDLE_STATE, timestamp: this.env.now() };
+		this.state = this.stoppedState();
 		this.env.persist(this.state);
 		this.broadcastState();
 		this.env.setAlarm(null);

@@ -53,6 +53,7 @@
 	};
 
 	const footerLinks = [
+		{ label: 'PF Labs', href: 'https://pflabs.in' },
 		{ label: 'GitHub', href: 'https://github.com/anandhuremanan' },
 		{ label: 'LinkedIn', href: 'https://www.linkedin.com/in/anandhuremanan/' },
 		{ label: 'X', href: 'https://twitter.com/anandhu_or' },

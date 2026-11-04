@@ -119,9 +119,10 @@ export const projects: Project[] = [
 		],
 		caption: 'Agent loop, running locally',
 		links: [
-			{ label: 'Documentation', href: 'https://anandhuremanan.github.io/gb-codex/' },
+			{ label: 'Documentation', href: 'https://kit.gramproindia.com/se-agent' },
 			{ label: 'Source', href: 'https://github.com/anandhuremanan/gb-codex' }
-		]
+		],
+		client: 'Grampro Business Services'
 	},
 	{
 		id: 'sysinfopro',

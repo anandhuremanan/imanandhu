@@ -60,9 +60,11 @@
 	let connected = $state(false);
 
 	/**
-	 * The most recent track we actually saw playing. The server nulls every
-	 * field when it goes idle, so without remembering it here there would be
-	 * nothing to put behind "Last played".
+	 * The most recent track seen playing during this visit.
+	 *
+	 * The server now keeps the track when playback stops, so "Last played"
+	 * works for someone arriving cold. This stays as a fallback for the gap
+	 * where a stopped frame has not arrived yet.
 	 */
 	let lastTrack = $state<State | null>(null);
 
@@ -75,33 +77,25 @@
 
 	const visible = $derived(Boolean(WS_URL) && connected && live !== null);
 	const playing = $derived(live?.playing === true && Boolean(live.title));
-	/** What the card displays: the live track, or the remembered one. */
-	const shown = $derived(playing ? live : lastTrack);
+	/**
+	 * What the card displays. A stopped frame still carries its track, so it
+	 * is preferred over the one remembered from earlier in the visit.
+	 */
+	const shown = $derived(live?.title ? live : lastTrack);
 	/** Only a playing track is worth linking to. */
 	const linkHref = $derived(playing && shown?.url ? shown.url : null);
 	const collapsed = $derived(narrow && !expanded);
 
 	/**
-	 * Reads kerala.now so it re-derives on the clock's 15s tick — no second
-	 * timer just to keep "12m ago" honest.
+	 * No elapsed time on the last-played state. "Last played · 3d ago" reads
+	 * as abandoned, and without a visible age the track never goes stale —
+	 * which is also why it needs no expiry on the server.
 	 */
-	const since = $derived.by(() => {
-		void kerala.now;
-		const at = live?.timestamp;
-		if (!at) return '';
-		const mins = Math.floor((Date.now() - at) / 60000);
-		if (mins < 1) return 'just now';
-		if (mins < 60) return `${mins}m ago`;
-		const hours = Math.floor(mins / 60);
-		if (hours < 24) return `${hours}h ago`;
-		return `${Math.floor(hours / 24)}d ago`;
-	});
-
 	const label = $derived(
 		playing
 			? `now listening · ${kerala.clock}`
 			: shown
-				? `Last played · ${since}`
+				? 'Last played'
 				: `He's idle, Nothing playing`
 	);
 
