@@ -38,6 +38,24 @@
 	const PEEK_MS = 5000;
 
 	/**
+	 * How long to wait before admitting we are still connecting.
+	 *
+	 * A socket that opens in 150ms would otherwise flash a loader and replace
+	 * it immediately, which reads worse than the brief gap it was meant to
+	 * fill. Below this, the card simply appears with its content.
+	 */
+	const WAIT_BEFORE_LOADER_MS = 350;
+
+	/**
+	 * When to stop waiting and show nothing at all.
+	 *
+	 * The card has always failed silently — a visitor is never shown a
+	 * connection error — so a loader that spins forever against a dead worker
+	 * would break that promise rather than keep it.
+	 */
+	const GIVE_UP_MS = 6000;
+
+	/**
 	 * Shown when the room is idle and we never saw a track this visit — a
 	 * visitor arriving during a quiet spell. "Last played" needs a track to
 	 * point at, so without one there is nothing factual to say and a flat
@@ -75,7 +93,14 @@
 	let peeked = false;
 	let reduced = false;
 
-	const visible = $derived(Boolean(WS_URL) && connected && live !== null);
+	/** True once a real state frame has arrived and there is content to show. */
+	const ready = $derived(Boolean(WS_URL) && connected && live !== null);
+
+	/** Set after WAIT_BEFORE_LOADER_MS if nothing has arrived; cleared on give-up. */
+	let waiting = $state(false);
+
+	/** The card is on screen either because it has content, or while it waits. */
+	const visible = $derived(ready || waiting);
 	const playing = $derived(live?.playing === true && Boolean(live.title));
 	/**
 	 * What the card displays. A stopped frame still carries its track, so it
@@ -92,11 +117,13 @@
 	 * which is also why it needs no expiry on the server.
 	 */
 	const label = $derived(
-		playing
-			? `now listening · ${kerala.clock}`
-			: shown
-				? 'Last played'
-				: `He's idle, Nothing playing`
+		waiting
+			? 'one moment'
+			: playing
+				? `now listening · ${kerala.clock}`
+				: shown
+					? 'last played'
+					: `He's idle, Nothing playing`
 	);
 
 	/**
@@ -116,14 +143,20 @@
 
 	/** What the expanded card announces. */
 	const cardLabel = $derived(
-		shown?.title
-			? `${playing ? 'Now listening' : 'Last played'}: ${shown.title}${shown.artist ? ` by ${shown.artist}` : ''}`
-			: `Nothing playing. ${joke}`
+		waiting
+			? 'Checking what is playing'
+			: shown?.title
+				? `Anandhu ${playing ? 'is now listening to' : 'last played'}: ${shown.title}${shown.artist ? ` by ${shown.artist}` : ''}`
+				: `Nothing playing. ${joke}`
 	);
 
 	/** What the collapsed FAB announces — it is a control, so it says so. */
 	const tapLabel = $derived(
-		shown?.title ? `Now listening: ${shown.title}. Show details.` : 'Nothing playing. Show why.'
+		waiting
+			? 'Checking what is playing'
+			: shown?.title
+				? `${playing ? 'Now listening' : 'Last played'}: ${shown.title}. Show details.`
+				: 'Nothing playing. Show why.'
 	);
 
 	/**
@@ -132,7 +165,9 @@
 	 * never discover it does anything.
 	 */
 	$effect(() => {
-		if (!visible || !narrow || peeked) return;
+		// Keyed on `ready`, not `visible`: peeking at a loader would show an
+		// empty card and then collapse just as the track arrived.
+		if (!ready || !narrow || peeked) return;
 		peeked = true;
 		if (reduced) return;
 		expanded = true;
@@ -168,6 +203,15 @@
 		let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
 		let attempts = 0;
 		let closed = false;
+
+		// Raise the loader only if the first frame is slow, and retire it if it
+		// never comes. Both are cleared in the teardown below.
+		const raise = setTimeout(() => {
+			if (live === null) waiting = true;
+		}, WAIT_BEFORE_LOADER_MS);
+		const giveUp = setTimeout(() => {
+			if (live === null) waiting = false;
+		}, GIVE_UP_MS);
 
 		function scheduleReconnect() {
 			if (closed || reconnectTimer !== undefined) return;
@@ -221,6 +265,7 @@
 					timestamp: typeof msg.timestamp === 'number' ? msg.timestamp : Date.now()
 				};
 				live = next;
+				waiting = false;
 				if (next.playing && next.title) lastTrack = next;
 			});
 
@@ -248,6 +293,8 @@
 			narrowQuery.removeEventListener('change', syncNarrow);
 			document.removeEventListener('visibilitychange', onVisibility);
 			if (reconnectTimer !== undefined) clearTimeout(reconnectTimer);
+			clearTimeout(raise);
+			clearTimeout(giveUp);
 			const s = socket;
 			socket = null;
 			s?.close(1000, 'component destroyed');
@@ -262,7 +309,13 @@
 		between <button> and <a> would destroy and rebuild the element, and the
 		size transition would never run.
 	-->
-	<div class="np" class:idle={!playing} class:bare={!shown} class:open={expanded}>
+	<div
+		class="np"
+		class:idle={!playing}
+		class:bare={!shown && !waiting}
+		class:waiting
+		class:open={expanded}
+	>
 		<svelte:element
 			this={linkHref ? 'a' : 'div'}
 			class="inner"
@@ -276,8 +329,11 @@
 				{#if shown?.artwork}
 					<img src={shown.artwork} alt="" width="56" height="56" loading="lazy" />
 				{/if}
-				<!-- Stands in for the artwork when there is no track to show one for. -->
-				<span class="mark" aria-hidden="true">!</span>
+				<!-- Stands in for the artwork when there is no track to show one for.
+				     Not while waiting: the equalizer is the indicator there. -->
+				{#if !waiting}
+					<span class="mark" aria-hidden="true">!</span>
+				{/if}
 				<span class="eq" aria-hidden="true">
 					<i style="--dur: 0.9s; --delay: 0s"></i>
 					<i style="--dur: 0.7s; --delay: -0.3s"></i>
@@ -290,7 +346,10 @@
 				     so the resting pill is just artwork plus the track name. -->
 				<span class="reveal">
 					<span class="label mono">
-						<span class="long">{playing ? 'Anandhu is ' : ''}</span>{label}
+						<!-- Says whose listening it is without a trailing "by him". The
+						     prefix is hidden on narrow screens, leaving just the label. -->
+						<span class="long">{playing ? 'Anandhu is ' : shown ? 'Anandhu ' : ''}</span
+						>{label}
 					</span>
 				</span>
 
@@ -301,6 +360,10 @@
 							<span class="artist">{shown.artist}</span>
 						</span>
 					{/if}
+				{:else if waiting}
+					<!-- The equalizer is already doing the work; this just gives the
+					     card a line of text so it is not an empty box. -->
+					<span class="title dim">Checking…</span>
 				{:else}
 					<span class="title joke">{joke}</span>
 				{/if}
@@ -610,6 +673,45 @@
 		transform: scaleY(0.35);
 	}
 
+	/*
+	 * Waiting. Deliberately not the playing bounce: that would claim music is
+	 * on before we know. These travel left to right at one steady rate, which
+	 * reads as a progress cue rather than a level meter.
+	 *
+	 * `.np.waiting` outranks `.idle .eq i` above, which would otherwise freeze
+	 * them — a waiting card is also a non-playing one.
+	 */
+	.np.waiting .eq i {
+		animation: wait 1.1s ease-in-out var(--wait-delay, 0s) infinite;
+		background: var(--muted);
+		transform: scaleY(0.3);
+	}
+
+	.np.waiting .eq i:nth-child(2) {
+		--wait-delay: 0.15s;
+	}
+
+	.np.waiting .eq i:nth-child(3) {
+		--wait-delay: 0.3s;
+	}
+
+	@keyframes wait {
+		0%,
+		100% {
+			transform: scaleY(0.3);
+			opacity: 0.5;
+		}
+		50% {
+			transform: scaleY(0.85);
+			opacity: 1;
+		}
+	}
+
+	/* The waiting line is a status, not content. */
+	.dim {
+		color: var(--muted);
+	}
+
 	.text {
 		display: flex;
 		min-width: 0;
@@ -712,6 +814,14 @@
 	/* The global reduce rule already zeroes durations; this makes sure nothing
 	   is left half-open when transitions are off. */
 	@media (prefers-reduced-motion: reduce) {
+		/* Hold the bars at a readable height instead of pulsing them. The card
+		   still says "Checking…", so the state is not lost. */
+		.np.waiting .eq i {
+			animation: none;
+			transform: scaleY(0.6);
+			opacity: 1;
+		}
+
 		.reveal {
 			grid-template-rows: 1fr;
 			opacity: 1;

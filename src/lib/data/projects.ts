@@ -97,7 +97,7 @@ export const projects: Project[] = [
 			{ label: 'Documentation', href: 'https://kit.gramproindia.com/' },
 			{ label: 'Source', href: 'https://github.com/gramproindia/kit' }
 		],
-		client: 'Grampro Business Services'
+		client: 'Built for Grampro Business Services'
 	},
 	{
 		id: 'gbs-se-agent',
@@ -122,7 +122,7 @@ export const projects: Project[] = [
 			{ label: 'Documentation', href: 'https://kit.gramproindia.com/se-agent' },
 			{ label: 'Source', href: 'https://github.com/anandhuremanan/gb-codex' }
 		],
-		client: 'Grampro Business Services'
+		client: 'Built for Grampro Business Services'
 	},
 	{
 		id: 'sysinfopro',
